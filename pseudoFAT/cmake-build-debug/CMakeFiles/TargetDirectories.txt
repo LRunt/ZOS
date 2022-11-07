@@ -1,0 +1,3 @@
+D:/ZOS/pseudoFAT/cmake-build-debug/CMakeFiles/pseudoFAT.dir
+D:/ZOS/pseudoFAT/cmake-build-debug/CMakeFiles/edit_cache.dir
+D:/ZOS/pseudoFAT/cmake-build-debug/CMakeFiles/rebuild_cache.dir
