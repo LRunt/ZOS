@@ -3,4 +3,4 @@ project(pseudoFAT)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(pseudoFAT main.cpp)
+add_executable(pseudoFAT main.cpp Parser.cpp Parser.h)
