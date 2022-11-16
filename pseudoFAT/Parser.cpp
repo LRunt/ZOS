@@ -31,9 +31,6 @@ int getCommandType(const std::string& command){
     }
 }
 
-
-
-
 std::vector<std::string> Parser::parseCommand(const std::string &command) {
 
     std::istringstream iss(command);
@@ -48,38 +45,54 @@ std::vector<std::string> Parser::parseCommand(const std::string &command) {
 }
 
 int Parser::loadCommand(const std::string &command) {
+    if(!command.length()){
+        return -1;
+    }
     std::vector<std::string> myVector = parseCommand(command);
-    switch(getCommandType(command)){
+    switch(getCommandType(myVector[0])){
         case 0:
             return 0;
         case 1:
             std::cout << "CP" << std::endl;
             return 1;
         case 2:
+            std::cout << "MV" << std::endl;
             return 2;
         case 3:
+            std::cout << "RM" << std::endl;
             return 3;
         case 4:
+            std::cout << "MKDIR" << std::endl;
             return 4;
         case 5:
+            std::cout << "RMDIR" << std::endl;
             return 5;
         case 6:
+            std::cout << "LS" << std::endl;
             return 6;
         case 7:
+            std::cout << "CAT" << std::endl;
             return 7;
         case 8:
+            std::cout << "CD" << std::endl;
             return 8;
         case 9:
+            std::cout << "PWD" << std::endl;
             return 9;
         case 10:
+            std::cout << "INFO" << std::endl;
             return 10;
         case 11:
+            std::cout << "INCP" << std::endl;
             return 11;
         case 12:
+            std::cout << "OUTCP" << std::endl;
             return 12;
         case 13:
+            std::cout << "LOAD" << std::endl;
             return 13;
         case 14:
+            mCmd.format(myVector);
             return 14;
         default:
             std::cout << command << ": COMMAND NOT FOUND" << std::endl;

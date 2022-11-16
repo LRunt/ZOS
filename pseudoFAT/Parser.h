@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include "Commands.h"
 
 
 class Parser final{
@@ -23,6 +24,7 @@ class Parser final{
 
     private:
         std::vector<std::string> mCommand;
+        Commands mCmd;
 };
 
 

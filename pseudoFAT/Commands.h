@@ -7,7 +7,10 @@
 
 #include <string>
 #include <iostream>
+#include <vector>
+#include <fstream>
 #include "FAT.h"
+
 
 
 class Commands {
@@ -15,7 +18,7 @@ class Commands {
     public:
         Commands() = default;
 
-        bool format(const std::string& command);
+        bool format(std::vector<std::string> myVectorOfCommands);
 
 
     private:

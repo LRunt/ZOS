@@ -4,7 +4,15 @@
 
 #include "Commands.h"
 
-bool Commands::format(const std::string &command) {
+bool Commands::format(std::vector<std::string> myVectorOfCommands) {
+    std::ofstream fileSystem("myFileSystem.bin", std::ios::out | std::ios::binary);
 
+    std::string binbuf = *myVectorOfCommands.begin();
+    const char* str = "";
+
+    for(int i = 0; i < 800*1024; i++){
+        fileSystem.write(str, 1);
+    }
+    std::cout << "OK" <<std::endl;
     return false;
 }
