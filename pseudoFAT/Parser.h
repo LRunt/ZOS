@@ -10,15 +10,16 @@
 #include <list>
 #include <sstream>
 #include <vector>
+#include <map>
 
 
 class Parser final{
     public:
         Parser() = default;
 
-        std::vector<std::string> parseCommand(const std::string& command);
+        int loadCommand(const std::string &command);
 
-        int getTypeOfCommand(const std::string& command);
+        std::vector<std::string> parseCommand(const std::string& command);
 
     private:
         std::vector<std::string> mCommand;
