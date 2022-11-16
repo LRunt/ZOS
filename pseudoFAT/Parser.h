@@ -20,7 +20,7 @@ class Parser final{
 
         int loadCommand(const std::string &command);
 
-        std::vector<std::string> parseCommand(const std::string& command);
+        static std::vector<std::string> parseCommand(const std::string& command);
 
     private:
         std::vector<std::string> mCommand;

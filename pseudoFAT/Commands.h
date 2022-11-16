@@ -9,9 +9,9 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
+#include <map>
 #include "FAT.h"
-
-
 
 class Commands {
 
