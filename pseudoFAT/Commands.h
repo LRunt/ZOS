@@ -24,6 +24,8 @@ class Commands {
         char* mFileSystemName;
         int mClusterSize = 1024;
         int mFileSize;
+        int mTableCellSize;
+        int mNumberOfClusters;
 };
 
 

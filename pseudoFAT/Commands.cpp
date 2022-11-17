@@ -4,6 +4,9 @@
 
 #include "Commands.h"
 
+const int LAST_BLOCK = -1;
+const int FREE_BLOCK = -2;
+
 std::map<std::string, int> units = {
         {"B", 1},
         {"kB", 1024},
@@ -46,11 +49,39 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
 
     std::ofstream fileSystem(mFileSystemName, std::ios::out | std::ios::binary);
 
-    const char* str = "";
-
     mFileSize = stoi(parsed[0])*unit;
 
-    for(int i = 0; i < mFileSize; i++){
+    std::string size = std::to_string(mFileSize);
+    std::string clusterSize = std::to_string(mClusterSize);
+
+    size = size + '\0';
+    clusterSize = clusterSize + '\0';
+
+    mNumberOfClusters = mFileSize/mClusterSize;
+
+    mTableCellSize = std::to_string(mNumberOfClusters).size() + 1;
+
+    std::cout << std::to_string(mNumberOfClusters) << std::endl;
+
+    fileSystem.write(&size[0], size.size());
+    fileSystem.write(&clusterSize[0], clusterSize.size());
+
+    const char* str = "";
+
+    //BOOT record
+    for(int i = 0; i < mClusterSize - size.size() - clusterSize.size(); i++){
+        fileSystem.write(str, 1);
+    }
+
+    fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
+    fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
+
+    //FAT tabulka
+    for(int i = 0; i < mNumberOfClusters - 2; i++){
+        fileSystem.write(&std::to_string(FREE_BLOCK)[0], mTableCellSize);
+    }
+
+    for(int i = 0; i < mFileSize - mClusterSize - mNumberOfClusters * mTableCellSize; i++){
         fileSystem.write(str, 1);
     }
     return true;
