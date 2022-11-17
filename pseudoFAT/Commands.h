@@ -11,19 +11,19 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include "FAT.h"
 
 class Commands {
 
     public:
-        Commands() = default;
+        explicit Commands(char* fileSystemName) :  mFileSystemName{fileSystemName}{}
 
         bool format(std::vector<std::string> myVectorOfCommands);
 
 
     private:
-        FAT::description mDescription;
-
+        char* mFileSystemName;
+        int mClusterSize = 1024;
+        int mFileSize;
 };
 
 

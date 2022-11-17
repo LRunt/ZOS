@@ -61,12 +61,6 @@ build CMakeFiles/pseudoFAT.dir/Parser.cpp.obj: CXX_COMPILER__pseudoFAT_Debug D$:
   OBJECT_DIR = CMakeFiles\pseudoFAT.dir
   OBJECT_FILE_DIR = CMakeFiles\pseudoFAT.dir
 
-build CMakeFiles/pseudoFAT.dir/FAT.cpp.obj: CXX_COMPILER__pseudoFAT_Debug D$:/ZOS/pseudoFAT/FAT.cpp || cmake_object_order_depends_target_pseudoFAT
-  DEP_FILE = CMakeFiles\pseudoFAT.dir\FAT.cpp.obj.d
-  FLAGS = -g -std=gnu++20
-  OBJECT_DIR = CMakeFiles\pseudoFAT.dir
-  OBJECT_FILE_DIR = CMakeFiles\pseudoFAT.dir
-
 build CMakeFiles/pseudoFAT.dir/Commands.cpp.obj: CXX_COMPILER__pseudoFAT_Debug D$:/ZOS/pseudoFAT/Commands.cpp || cmake_object_order_depends_target_pseudoFAT
   DEP_FILE = CMakeFiles\pseudoFAT.dir\Commands.cpp.obj.d
   FLAGS = -g -std=gnu++20
@@ -81,7 +75,7 @@ build CMakeFiles/pseudoFAT.dir/Commands.cpp.obj: CXX_COMPILER__pseudoFAT_Debug D
 #############################################
 # Link the executable pseudoFAT.exe
 
-build pseudoFAT.exe: CXX_EXECUTABLE_LINKER__pseudoFAT_Debug CMakeFiles/pseudoFAT.dir/main.cpp.obj CMakeFiles/pseudoFAT.dir/Parser.cpp.obj CMakeFiles/pseudoFAT.dir/FAT.cpp.obj CMakeFiles/pseudoFAT.dir/Commands.cpp.obj
+build pseudoFAT.exe: CXX_EXECUTABLE_LINKER__pseudoFAT_Debug CMakeFiles/pseudoFAT.dir/main.cpp.obj CMakeFiles/pseudoFAT.dir/Parser.cpp.obj CMakeFiles/pseudoFAT.dir/Commands.cpp.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\pseudoFAT.dir

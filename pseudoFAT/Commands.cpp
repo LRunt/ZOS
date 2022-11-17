@@ -40,17 +40,18 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     std::vector<std::string> parsed = getSize(myVectorOfCommands[1]);
 
     int unit = getUnitSize(parsed[1]);
-    if(!unit){
+    if(!unit || parsed.size() == 1){
         return false;
     }
 
-    std::ofstream fileSystem("myFileSystem.bin", std::ios::out | std::ios::binary);
+    std::ofstream fileSystem(mFileSystemName, std::ios::out | std::ios::binary);
 
     const char* str = "";
 
-    for(int i = 0; i < stoi(parsed[0])*unit; i++){
+    mFileSize = stoi(parsed[0])*unit;
+
+    for(int i = 0; i < mFileSize; i++){
         fileSystem.write(str, 1);
     }
-    std::cout << "OK" <<std::endl;
     return true;
 }

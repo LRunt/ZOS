@@ -16,7 +16,9 @@
 
 class Parser final{
     public:
-        Parser() = default;
+        explicit Parser(char* filename){
+            mCmd = new Commands(filename);
+        };
 
         int loadCommand(const std::string &command);
 
@@ -24,7 +26,7 @@ class Parser final{
 
     private:
         std::vector<std::string> mCommand;
-        Commands mCmd;
+        Commands* mCmd;
 };
 
 

@@ -92,7 +92,11 @@ int Parser::loadCommand(const std::string &command) {
             std::cout << "LOAD" << std::endl;
             return 13;
         case 14:
-            mCmd.format(myVector);
+            if(mCmd->format(myVector)){
+                std::cout << "OK" << std::endl;
+            }else{
+                std::cout << "CANNOT CREATE FILE" << std::endl;
+            }
             return 14;
         default:
             std::cout << command << ": COMMAND NOT FOUND" << std::endl;

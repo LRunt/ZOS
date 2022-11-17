@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     std::string input;
     int loop = 1;
 
-    Parser prs;
+    auto* prs = new Parser(argv[1]);
     std::vector<std::string> myList;
 
 
@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
         std::getline(std::cin, input);
 
-        loop = prs.loadCommand(input);
+        loop = prs->loadCommand(input);
 
     }
 
