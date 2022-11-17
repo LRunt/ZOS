@@ -73,12 +73,31 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
         fileSystem.write(str, 1);
     }
 
+    //FAT table
+    //BOOT record
     fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
+    //Table
+    int tableSize = mTableCellSize * mNumberOfClusters;
+    double numberOfClustersForTable = tableSize / (double)mClusterSize;
+    //Counting start of the data section
+    mStartClusterOfData = 1 + std::ceil(numberOfClustersForTable);
+    std::cout << "Start dat: " << mStartClusterOfData << std::endl;
+    int tableCluster = 1;
+    while(tableCluster < numberOfClustersForTable){
+        fileSystem.write(&std::to_string(tableCluster + 1)[0], std::to_string(tableCluster + 1).size());
+        for(int i = std::to_string(tableCluster + 1).size(); i < mTableCellSize; i++){
+            fileSystem.write(str, 1);
+        }
+        tableCluster++;
+    }
     fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
 
-    //FAT tabulka
+    //data
     for(int i = 0; i < mNumberOfClusters - 2; i++){
-        fileSystem.write(&std::to_string(FREE_BLOCK)[0], mTableCellSize);
+        fileSystem.write(&std::to_string(FREE_BLOCK)[0], std::to_string(FREE_BLOCK).size());
+        for(int j = std::to_string(FREE_BLOCK).size(); j < mTableCellSize; j++){
+            fileSystem.write(str, 1);
+        }
     }
 
     for(int i = 0; i < mFileSize - mClusterSize - mNumberOfClusters * mTableCellSize; i++){

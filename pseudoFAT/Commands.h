@@ -10,6 +10,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 #include <map>
 
 class Commands {
@@ -26,6 +27,7 @@ class Commands {
         int mFileSize;
         int mTableCellSize;
         int mNumberOfClusters;
+        int mStartClusterOfData;
 };
 
 
