@@ -20,6 +20,31 @@ class Commands {
 
         bool format(std::vector<std::string> myVectorOfCommands);
 
+        int cp(std::vector<std::string> vectorOfCommands);
+
+        int mv(std::vector<std::string> vectorOfCommands);
+
+        bool rm(std::vector<std::string> vectorOfCommands);
+
+        int mkdir(std::vector<std::string> vectorOfCommands);
+
+        int rmdir(std::vector<std::string> vectorOfCommands);
+
+        int ls(std::vector<std::string> vectorOfCommands);
+
+        bool cat(std::vector<std::string> vectorOfCommands);
+
+        bool cd(std::vector<std::string> vectorOfCommands);
+
+        std::string pwd(std::vector<std::string> vectorOfCommands);
+
+        bool info(std::vector<std::string> vectorOfCommands);
+
+        int incp(std::vector<std::string> vectorOfCommands);
+
+        bool outcp(std::vector<std::string> vectorOfCommands);
+
+        bool load(std::vector<std::string> vectorOfCommands);
 
     private:
         char* mFileSystemName;
@@ -28,6 +53,8 @@ class Commands {
         int mTableCellSize;
         int mNumberOfClusters;
         int mStartClusterOfData;
+        //defines where i am
+        int mActualCluster;
 };
 
 
