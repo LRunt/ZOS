@@ -7,6 +7,7 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -16,7 +17,9 @@
 class Commands {
 
     public:
-        explicit Commands(char* fileSystemName) :  mFileSystemName{fileSystemName}{}
+        explicit Commands(char* fileSystemName) :  mFileSystemName{fileSystemName}{
+            mFileSize = 0;
+        }
 
         bool format(std::vector<std::string> myVectorOfCommands);
 
@@ -46,15 +49,19 @@ class Commands {
 
         bool load(std::vector<std::string> vectorOfCommands);
 
+        void saveFileSystemParameters();
+
     private:
         char* mFileSystemName;
         int mClusterSize = 1024;
         int mFileSize;
         int mTableCellSize;
         int mNumberOfClusters;
-        int mStartClusterOfData;
+        int mStartClusterOfData = 0;
         //defines where i am
         int mActualCluster;
+
+        int getNumberFromFat(int cluster);
 };
 
 

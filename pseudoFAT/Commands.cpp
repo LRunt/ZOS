@@ -80,21 +80,24 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     fileSystem.write(&size[0], size.size());
     fileSystem.write(&clusterSize[0], clusterSize.size());
 
-    const char* str = "";
-
-    //BOOT record
-    for(int i = 0; i < mClusterSize - size.size() - clusterSize.size(); i++){
-        fileSystem.write(str, 1);
-    }
-
-    //FAT table
-    //BOOT record
-    fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
-    //Table
     int tableSize = mTableCellSize * mNumberOfClusters;
     double numberOfClustersForTable = tableSize / (double)mClusterSize;
     //Counting start of the data section
     mStartClusterOfData = 1 + std::ceil(numberOfClustersForTable);
+    mActualCluster = mStartClusterOfData;
+
+    fileSystem.write(&std::to_string(mStartClusterOfData)[0], std::to_string(mStartClusterOfData).size());
+
+    const char* str = "";
+
+    //BOOT record
+    for(int i = 0; i < mClusterSize - size.size() - clusterSize.size() - std::to_string(mStartClusterOfData).size(); i++){
+        fileSystem.write(str, 1);
+    }
+
+    //FAT table
+    fileSystem.write(&std::to_string(LAST_BLOCK)[0], mTableCellSize);
+    //Table
     int tableCluster = 1;
     while(tableCluster < numberOfClustersForTable){
         fileSystem.write(&std::to_string(tableCluster + 1)[0], std::to_string(tableCluster + 1).size());
@@ -120,10 +123,13 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     for(int i = 0; i < mFileSize - mClusterSize - mNumberOfClusters * mTableCellSize; i++){
         fileSystem.write(str, 1);
     }
+    fileSystem.close();
     return true;
 }
 
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
+    saveFileSystemParameters();
+    getNumberFromFat(std::stoi(vectorOfCommands[1]));
     return 0;
 }
 
@@ -136,6 +142,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
+
     return 0;
 }
 
@@ -156,6 +163,7 @@ bool Commands::cd(std::vector<std::string> vectorOfCommands) {
 }
 
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
+    saveFileSystemParameters();
     return std::string();
 }
 
@@ -173,6 +181,75 @@ bool Commands::outcp(std::vector<std::string> vectorOfCommands) {
 
 bool Commands::load(std::vector<std::string> vectorOfCommands) {
     return false;
+}
+
+void Commands::saveFileSystemParameters() {
+    std::ifstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+
+    char data[1];
+    data[0] = 'a';
+    std::string output = "";
+
+    do{
+        fileSystem.read(data, 1);
+        std::cout << *data << std::endl;
+        output += *data;
+    }while(*data != 0x00);
+
+    std::cout << output << std::endl;
+
+    if(!mFileSize){
+        mFileSize = std::stoi(output);
+    }
+
+    output = "";
+
+    do{
+        fileSystem.read(data, 1);
+        std::cout << *data << std::endl;
+        output += *data;
+    }while(*data != 0x00);
+
+    std::cout << output << std::endl;
+
+    mClusterSize = std::stoi(output);
+
+    mNumberOfClusters = mFileSize/mClusterSize;
+    mTableCellSize = std::to_string(mNumberOfClusters).size() + 1;
+
+    output = "";
+
+    do{
+        fileSystem.read(data, 1);
+        std::cout << *data << std::endl;
+        output += *data;
+    }while(*data != 0x00);
+
+    std::cout << output << std::endl;
+
+    mStartClusterOfData = std::stoi(output);
+
+    fileSystem.close();
+}
+
+int Commands::getNumberFromFat(int cluster){
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    std::cout << mTableCellSize << std::endl;
+    std::cout << mClusterSize << std::endl;
+    fileSystem.seekp(mClusterSize + cluster * mTableCellSize);
+    char data[1];
+
+    std::string output = "";
+
+    do{
+        fileSystem.read(data, 1);
+        output += *data;
+    }while(*data != 0x00);
+
+    std::cout << std::stoi(output) << std::endl;
+
+    fileSystem.close();
+    return std::stoi(output);
 }
 
 
