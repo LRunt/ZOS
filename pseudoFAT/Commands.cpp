@@ -187,16 +187,13 @@ void Commands::saveFileSystemParameters() {
     std::ifstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
 
     char data[1];
-    data[0] = 'a';
-    std::string output = "";
+    std::string output;
 
     do{
         fileSystem.read(data, 1);
-        std::cout << *data << std::endl;
         output += *data;
     }while(*data != 0x00);
 
-    std::cout << output << std::endl;
 
     if(!mFileSize){
         mFileSize = std::stoi(output);
@@ -206,11 +203,8 @@ void Commands::saveFileSystemParameters() {
 
     do{
         fileSystem.read(data, 1);
-        std::cout << *data << std::endl;
         output += *data;
     }while(*data != 0x00);
-
-    std::cout << output << std::endl;
 
     mClusterSize = std::stoi(output);
 
@@ -221,11 +215,8 @@ void Commands::saveFileSystemParameters() {
 
     do{
         fileSystem.read(data, 1);
-        std::cout << *data << std::endl;
         output += *data;
     }while(*data != 0x00);
-
-    std::cout << output << std::endl;
 
     mStartClusterOfData = std::stoi(output);
 
@@ -239,14 +230,12 @@ int Commands::getNumberFromFat(int cluster){
     fileSystem.seekp(mClusterSize + cluster * mTableCellSize);
     char data[1];
 
-    std::string output = "";
+    std::string output;
 
     do{
         fileSystem.read(data, 1);
         output += *data;
     }while(*data != 0x00);
-
-    std::cout << std::stoi(output) << std::endl;
 
     fileSystem.close();
     return std::stoi(output);
