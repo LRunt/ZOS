@@ -65,6 +65,7 @@ int Parser::loadCommand(const std::string &command) {
         case 4:
             mCmd->mkdir(myVector);
             std::cout << "MKDIR" << std::endl;
+            mCmd->mkdir(myVector);
             return 4;
         case 5:
             std::cout << "RMDIR" << std::endl;

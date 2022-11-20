@@ -142,7 +142,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
-
+    rewriteTableCell(std::stoi(vectorOfCommands[1]), 22);
     return 0;
 }
 
@@ -183,9 +183,11 @@ bool Commands::load(std::vector<std::string> vectorOfCommands) {
     return false;
 }
 
+/**
+ * Method initialize data of the file system
+ */
 void Commands::saveFileSystemParameters() {
     std::ifstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-
     char data[1];
     std::string output;
 
@@ -193,7 +195,6 @@ void Commands::saveFileSystemParameters() {
         fileSystem.read(data, 1);
         output += *data;
     }while(*data != 0x00);
-
 
     if(!mFileSize){
         mFileSize = std::stoi(output);
@@ -223,10 +224,13 @@ void Commands::saveFileSystemParameters() {
     fileSystem.close();
 }
 
+/**
+ * Method reads value of cluster from FAT table
+ * @param cluster cluster what value we want
+ * @return number, -1 end of block, -2 empty cluster, other is address of next cluster
+ */
 int Commands::getNumberFromFat(int cluster){
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-    std::cout << mTableCellSize << std::endl;
-    std::cout << mClusterSize << std::endl;
     fileSystem.seekp(mClusterSize + cluster * mTableCellSize);
     char data[1];
 
@@ -239,6 +243,24 @@ int Commands::getNumberFromFat(int cluster){
 
     fileSystem.close();
     return std::stoi(output);
+}
+
+bool Commands::rewriteTableCell(int cluster, int tableNumber){
+    std::string tempString = std::to_string(tableNumber);
+    char const* numberArray = tempString.c_str();
+
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize + cluster * mTableCellSize);
+
+    for(int i = 0; i < tempString.size(); i++){
+        std::cout << numberArray[i] << std::endl;
+        fileSystem.put(numberArray[i]);
+    }
+
+    fileSystem.close();
+
+    return true;
 }
 
 

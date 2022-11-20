@@ -62,6 +62,8 @@ class Commands {
         int mActualCluster;
 
         int getNumberFromFat(int cluster);
+
+        bool rewriteTableCell(int cluster, int tableNumber);
 };
 
 
