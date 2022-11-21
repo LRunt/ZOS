@@ -6,6 +6,9 @@
 
 const int LAST_BLOCK = -1;
 const int FREE_BLOCK = -2;
+const char DIRECTORY = 'A';
+const char IS_FILE = 'S';
+const int NAME_OF_FILE_LENGTH = 11;
 
 /** Map of units where key is unit and the size is the value*/
 std::map<std::string, int> units = {
@@ -108,12 +111,17 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     }
 
     fileSystem.write(&std::to_string(LAST_BLOCK)[0], std::to_string(LAST_BLOCK).size());
-    for(int j = std::to_string(LAST_BLOCK).size(); j < mTableCellSize; j++){
+    for(int i = std::to_string(LAST_BLOCK).size(); i < mTableCellSize; i++){
+        fileSystem.write(str, 1);
+    }
+
+    fileSystem.write(&std::to_string(LAST_BLOCK)[0], std::to_string(LAST_BLOCK).size());
+    for(int i = std::to_string(LAST_BLOCK).size(); i < mTableCellSize; i++){
         fileSystem.write(str, 1);
     }
 
     //data
-    for(int i = 0; i < mNumberOfClusters - 2; i++){
+    for(int i = 0; i < mNumberOfClusters - std::ceil(numberOfClustersForTable) - 2; i++){
         fileSystem.write(&std::to_string(FREE_BLOCK)[0], std::to_string(FREE_BLOCK).size());
         for(int j = std::to_string(FREE_BLOCK).size(); j < mTableCellSize; j++){
             fileSystem.write(str, 1);
@@ -123,7 +131,15 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     for(int i = 0; i < mFileSize - mClusterSize - mNumberOfClusters * mTableCellSize; i++){
         fileSystem.write(str, 1);
     }
+    //root file
+    writeFileToTheCluster(mStartClusterOfData, "root", true, -1);
+
     fileSystem.close();
+
+    if(!mActualCluster){
+        mActualCluster = mStartClusterOfData;
+    }
+
     return true;
 }
 
@@ -134,6 +150,7 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
+    writeFileToTheCluster(mActualCluster, "random", true, 10);
     return 0;
 }
 
@@ -142,7 +159,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
-    rewriteTableCell(std::stoi(vectorOfCommands[1]), 22);
+    getFreeCluster();
     return 0;
 }
 
@@ -196,9 +213,7 @@ void Commands::saveFileSystemParameters() {
         output += *data;
     }while(*data != 0x00);
 
-    if(!mFileSize){
-        mFileSize = std::stoi(output);
-    }
+    mFileSize = std::stoi(output);
 
     output = "";
 
@@ -245,6 +260,12 @@ int Commands::getNumberFromFat(int cluster){
     return std::stoi(output);
 }
 
+/**
+ * Method rewrites value in the FAT table
+ * @param cluster cluster what value we will change
+ * @param tableNumber value what will be in the table
+ * @return true - it was successful, false - it failed
+ */
 bool Commands::rewriteTableCell(int cluster, int tableNumber){
     std::string tempString = std::to_string(tableNumber);
     char const* numberArray = tempString.c_str();
@@ -254,13 +275,71 @@ bool Commands::rewriteTableCell(int cluster, int tableNumber){
     fileSystem.seekp(mClusterSize + cluster * mTableCellSize);
 
     for(int i = 0; i < tempString.size(); i++){
-        std::cout << numberArray[i] << std::endl;
         fileSystem.put(numberArray[i]);
     }
 
     fileSystem.close();
 
     return true;
+}
+
+/**
+ * Method writes a file information into the cluster
+ * @param cluster the cluster into which the file will be written
+ * @param fileName name of the file
+ * @param isDirectory if the file is directory or not
+ * @param directoryCluster the cluster where is the directory stored
+ */
+void Commands::writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int directoryCluster){
+    char data[1];
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    int p = 0;
+    do{
+        fileSystem.seekp(mClusterSize * cluster + p * (NAME_OF_FILE_LENGTH + 1 + mTableCellSize));
+        fileSystem.read(data, 1);
+        p++;
+    } while (*data != 0x00);
+
+    fileSystem.seekp(mClusterSize * cluster + (p-1) * (NAME_OF_FILE_LENGTH + 1 + mTableCellSize));
+
+    for(char i : fileName){
+        fileSystem.put(i);
+    }
+    for(int i = fileName.size(); i < NAME_OF_FILE_LENGTH; i++){
+        fileSystem.put(0x00);
+    }
+    fileSystem.put(isDirectory);
+    for(char character : std::to_string(directoryCluster)){
+        fileSystem.put(character);
+    }
+
+    for(int i = std::to_string(directoryCluster).size(); i < mTableCellSize; i++){
+        fileSystem.put(0x00);
+    }
+
+    fileSystem.close();
+}
+
+/**
+ * Method returns index of first free cluster
+ * @return index of first free cluster
+ */
+int Commands::getFreeCluster(){
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize);
+
+    int size = std::to_string(mNumberOfClusters).size() + 1;
+    std::string output(size, ' ');
+
+    int i = -1;
+    do{
+        i++;
+        fileSystem.read(&output[0], size);
+    }while(output[0] != '-' || output[1] != '2');
+
+    std::cout << i << std::endl;
+    return i;
 }
 
 

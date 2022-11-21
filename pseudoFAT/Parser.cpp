@@ -58,9 +58,11 @@ int Parser::loadCommand(const std::string &command) {
             return 1;
         case 2:
             std::cout << "MV" << std::endl;
+            mCmd->mv(myVector);
             return 2;
         case 3:
             std::cout << "RM" << std::endl;
+            mCmd->rm(myVector);
             return 3;
         case 4:
             mCmd->mkdir(myVector);
@@ -69,15 +71,19 @@ int Parser::loadCommand(const std::string &command) {
             return 4;
         case 5:
             std::cout << "RMDIR" << std::endl;
+            mCmd->rmdir(myVector);
             return 5;
         case 6:
             std::cout << "LS" << std::endl;
+            mCmd->ls(myVector);
             return 6;
         case 7:
             std::cout << "CAT" << std::endl;
+            mCmd->cat(myVector);
             return 7;
         case 8:
             std::cout << "CD" << std::endl;
+            mCmd->cd(myVector);
             return 8;
         case 9:
             std::cout << "PWD" << std::endl;
@@ -85,15 +91,19 @@ int Parser::loadCommand(const std::string &command) {
             return 9;
         case 10:
             std::cout << "INFO" << std::endl;
+            mCmd->info(myVector);
             return 10;
         case 11:
             std::cout << "INCP" << std::endl;
+            mCmd->incp(myVector);
             return 11;
         case 12:
             std::cout << "OUTCP" << std::endl;
+            mCmd->outcp(myVector);
             return 12;
         case 13:
             std::cout << "LOAD" << std::endl;
+            mCmd->load(myVector);
             return 13;
         case 14:
             if(mCmd->format(myVector)){

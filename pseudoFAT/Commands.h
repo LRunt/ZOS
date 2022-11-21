@@ -18,7 +18,6 @@ class Commands {
 
     public:
         explicit Commands(char* fileSystemName) :  mFileSystemName{fileSystemName}{
-            mFileSize = 0;
         }
 
         bool format(std::vector<std::string> myVectorOfCommands);
@@ -64,6 +63,10 @@ class Commands {
         int getNumberFromFat(int cluster);
 
         bool rewriteTableCell(int cluster, int tableNumber);
+
+        void writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int directoryCluster);
+
+        int getFreeCluster();
 };
 
 
