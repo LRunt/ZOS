@@ -330,16 +330,37 @@ int Commands::getFreeCluster(){
     fileSystem.seekp(mClusterSize);
 
     int size = std::to_string(mNumberOfClusters).size() + 1;
-    std::string output(size, ' ');
+    std::string input(size, ' ');
 
     int i = -1;
     do{
         i++;
-        fileSystem.read(&output[0], size);
-    }while(output[0] != '-' || output[1] != '2');
+        fileSystem.read(&input[0], size);
+    }while(input[0] != '-' || input[1] != '2');
 
-    std::cout << i << std::endl;
     return i;
+}
+
+/**
+ * Method returns number of free clusters
+ * @return number of free clusters
+ */
+int Commands::getNumberOfFreeClusters(){
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize);
+
+    int size = std::to_string(mNumberOfClusters).size() + 1;
+    std::string input(size, ' ');
+    int numberOfFreeClusters = 0;
+
+    for(int i = 0; i < mNumberOfClusters; i++){
+        fileSystem.read(&input[0], size);
+        if(input[0] != '-' || input[1] != '2'){
+            numberOfFreeClusters++;
+        }
+    }
+
+    return numberOfFreeClusters;
 }
 
 

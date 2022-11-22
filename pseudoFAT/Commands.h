@@ -67,6 +67,8 @@ class Commands {
         void writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int directoryCluster);
 
         int getFreeCluster();
+
+        int getNumberOfFreeClusters();
 };
 
 
