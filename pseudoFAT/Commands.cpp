@@ -144,13 +144,10 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
 }
 
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
-    saveFileSystemParameters();
-    getNumberFromFat(std::stoi(vectorOfCommands[1]));
     return 0;
 }
 
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
-    writeFileToTheCluster(mActualCluster, "random", true, 10);
     return 0;
 }
 
@@ -159,7 +156,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
-    getFreeCluster();
+
     return 0;
 }
 
@@ -180,7 +177,6 @@ bool Commands::cd(std::vector<std::string> vectorOfCommands) {
 }
 
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
-    saveFileSystemParameters();
     return std::string();
 }
 
@@ -193,10 +189,6 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
 }
 
 bool Commands::outcp(std::vector<std::string> vectorOfCommands) {
-    return false;
-}
-
-bool Commands::load(std::vector<std::string> vectorOfCommands) {
     return false;
 }
 

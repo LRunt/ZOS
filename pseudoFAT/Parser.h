@@ -27,6 +27,8 @@ class Parser final{
     private:
         std::vector<std::string> mCommand;
         Commands* mCmd;
+
+    int load(std::vector<std::string> vectorOfCommands);
 };
 
 

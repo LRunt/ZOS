@@ -48,6 +48,7 @@ int Parser::loadCommand(const std::string &command) {
     if(!command.length()){
         return -1;
     }
+    int commandReturnValue;
     std::vector<std::string> myVector = parseCommand(command);
     switch(getCommandType(myVector[0])){
         case 0:
@@ -103,7 +104,14 @@ int Parser::loadCommand(const std::string &command) {
             return 12;
         case 13:
             std::cout << "LOAD" << std::endl;
-            mCmd->load(myVector);
+            commandReturnValue = load(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }
             return 13;
         case 14:
             if(mCmd->format(myVector)){
@@ -116,4 +124,28 @@ int Parser::loadCommand(const std::string &command) {
             std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             return -1;
     }
+}
+
+/**
+ * Method load commands form a file
+ * @param vectorOfCommands vector of command line
+ * @return 0 - if everything is okay, 1 - if command have incorrect number of parameters, 2 - if file not exists
+ */
+int Parser::load(std::vector<std::string> vectorOfCommands) {
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    std::ifstream input(vectorOfCommands[1], std::ios::in);
+    std::string line;
+
+    if(!input){
+        std::cout << "FILE NOT FOUND" << std::endl;
+    }else{
+        while(std::getline(input, line)){
+            loadCommand(line);
+        }
+    }
+
+    input.close();
+    return 0;
 }

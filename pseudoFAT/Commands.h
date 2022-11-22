@@ -46,8 +46,6 @@ class Commands {
 
         bool outcp(std::vector<std::string> vectorOfCommands);
 
-        bool load(std::vector<std::string> vectorOfCommands);
-
         void saveFileSystemParameters();
 
     private:
