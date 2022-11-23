@@ -136,10 +136,6 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
 
     fileSystem.close();
 
-    if(!mActualCluster){
-        mActualCluster = mStartClusterOfData;
-    }
-
     return true;
 }
 
@@ -155,8 +151,24 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method make a new file if file not exist
+ * @param vectorOfCommands commands from command line
+ * @return 0 - File was created, 1 - wrong number of parameters, 2 - file already exist
+ */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
-
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }else if(fileExist(vectorOfCommands[1])){
+        return 2;
+    }
+    int fileCluster = getFreeCluster();
+    writeFileToTheCluster(mActualCluster, vectorOfCommands[1], true, fileCluster);
+    writeFileToTheCluster(fileCluster, vectorOfCommands[1], true, mActualCluster);
+    rewriteTableCell(fileCluster, LAST_BLOCK);
     return 0;
 }
 
@@ -177,10 +189,14 @@ bool Commands::cd(std::vector<std::string> vectorOfCommands) {
 }
 
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
+    saveFileSystemParameters();
+    writeFileToTheCluster(mActualCluster, vectorOfCommands[1], true, 3);
     return std::string();
 }
 
 bool Commands::info(std::vector<std::string> vectorOfCommands) {
+    mActualCluster = 3;
+    fileExist(vectorOfCommands[1]);
     return false;
 }
 
@@ -227,6 +243,9 @@ void Commands::saveFileSystemParameters() {
     }while(*data != 0x00);
 
     mStartClusterOfData = std::stoi(output);
+    if(mActualCluster == -1){
+        mActualCluster = mStartClusterOfData;
+    }
 
     fileSystem.close();
 }
@@ -353,6 +372,38 @@ int Commands::getNumberOfFreeClusters(){
     }
 
     return numberOfFreeClusters;
+}
+
+/**
+ * Method detects whether a folder with the same name already exists
+ * @param fileName name of the file
+ * @return true - folder exist, false - folder not exist
+ */
+bool Commands::fileExist(std::string fileName){
+    char data[NAME_OF_FILE_LENGTH];
+    int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    int i = 1;
+    std::string nameOfTheFile;
+
+    do{
+        fileSystem.seekp(mClusterSize * mActualCluster + (fileInformationLength * i));
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            return true;
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return false;
 }
 
 

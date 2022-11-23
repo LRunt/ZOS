@@ -56,7 +56,7 @@ class Commands {
         int mNumberOfClusters;
         int mStartClusterOfData = 0;
         //defines where i am
-        int mActualCluster;
+        int mActualCluster = -1;
 
         int getNumberFromFat(int cluster);
 
@@ -67,6 +67,8 @@ class Commands {
         int getFreeCluster();
 
         int getNumberOfFreeClusters();
+
+    bool fileExist(std::string fileName);
 };
 
 
