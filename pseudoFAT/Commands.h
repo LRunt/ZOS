@@ -36,7 +36,7 @@ class Commands {
 
         bool cat(std::vector<std::string> vectorOfCommands);
 
-        bool cd(std::vector<std::string> vectorOfCommands);
+        int cd(std::vector<std::string> vectorOfCommands);
 
         std::string pwd(std::vector<std::string> vectorOfCommands);
 
@@ -69,6 +69,8 @@ class Commands {
         int getNumberOfFreeClusters();
 
     bool fileExist(std::string fileName);
+
+    bool isDirectory(std::string fileName);
 };
 
 

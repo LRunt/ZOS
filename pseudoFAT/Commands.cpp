@@ -184,8 +184,14 @@ bool Commands::cat(std::vector<std::string> vectorOfCommands) {
     return false;
 }
 
-bool Commands::cd(std::vector<std::string> vectorOfCommands) {
-    return false;
+int Commands::cd(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    return 0;
 }
 
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
@@ -396,7 +402,46 @@ bool Commands::fileExist(std::string fileName){
             j++;
         }
         if(nameOfTheFile == fileName){
+            fileSystem.close();
             return true;
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return false;
+}
+
+/**
+ * Method returns if the file is dictionary or not
+ * @param fileName name of the file
+ * @return true - file is a dictionary, false - file is not a dictionary
+ */
+bool Commands::isDirectory(std::string fileName){
+    char data[NAME_OF_FILE_LENGTH];
+    int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    int i = 1;
+    std::string nameOfTheFile;
+
+    do{
+        fileSystem.seekp(mClusterSize * mActualCluster + (fileInformationLength * i));
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            fileSystem.read(data, 1);
+            fileSystem.close();
+            if(*data == 0x01){
+                return true;
+            }else{
+                return false;
+            }
         }
         i++;
     }while(!nameOfTheFile.empty());

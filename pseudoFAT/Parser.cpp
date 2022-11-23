@@ -55,7 +55,14 @@ int Parser::loadCommand(const std::string &command) {
             return 0;
         case 1:
             std::cout << "CP" << std::endl;
-            mCmd->cp(myVector);
+            commandReturnValue = mCmd->cp(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else{
+                std::cout << "PATH NOT FOUND" << std::endl;
+            }
             return 1;
         case 2:
             std::cout << "MV" << std::endl;
