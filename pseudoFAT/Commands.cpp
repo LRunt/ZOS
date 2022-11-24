@@ -206,9 +206,26 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
 }
 
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
-    saveFileSystemParameters();
-    writeFileToTheCluster(mActualCluster, vectorOfCommands[1], true, 3);
-    return std::string();
+    std::string path;
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    std::vector<std::string> files;
+    int actualDirectory = mActualCluster;
+    //std::cout << getParentCluster(actualDirectory) << std::endl;
+
+    while(actualDirectory != -1){
+        files.push_back(getDirectoryName(actualDirectory));
+        actualDirectory = getParentCluster(actualDirectory);
+    }
+
+    std::reverse(files.begin(), files.end());
+
+    for(auto itr = files.begin(); itr != files.end(); ++itr){
+        path += *itr;
+    }
+
+    return path;
 }
 
 bool Commands::info(std::vector<std::string> vectorOfCommands) {
@@ -263,7 +280,6 @@ void Commands::saveFileSystemParameters() {
     if(mActualCluster == -1){
         mActualCluster = mStartClusterOfData;
     }
-
     fileSystem.close();
 }
 
@@ -387,7 +403,6 @@ int Commands::getNumberOfFreeClusters(){
             numberOfFreeClusters++;
         }
     }
-
     return numberOfFreeClusters;
 }
 
@@ -467,6 +482,40 @@ int Commands::getDirectoryCluster(std::string fileName){
     fileSystem.close();
 
     return 0;
+}
+
+int Commands::getParentCluster(int cluster){
+    char data[mTableCellSize];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster + NAME_OF_FILE_LENGTH + 1);
+    fileSystem.read(data, mTableCellSize);
+
+    std::string parentDirectoryCluster;
+    int i = 0;
+    while(data[i] != 0x00){
+        parentDirectoryCluster += data[i];
+        i++;
+    }
+
+    fileSystem.close();
+    return std::stoi(parentDirectoryCluster);
+}
+
+std::string Commands::getDirectoryName(int cluster){
+    char data[NAME_OF_FILE_LENGTH];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster);
+    fileSystem.read(data, NAME_OF_FILE_LENGTH);
+
+    std::string directoryName;
+    int i = 0;
+    while(data[i] != 0x00){
+        directoryName += data[i];
+        i++;
+    }
+
+    fileSystem.close();
+    return directoryName;
 }
 
 

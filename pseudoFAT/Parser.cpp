@@ -110,7 +110,7 @@ int Parser::loadCommand(const std::string &command) {
             return 8;
         case 9:
             std::cout << "PWD" << std::endl;
-            mCmd->pwd(myVector);
+            std::cout << mCmd->pwd(myVector) << std::endl;
             return 9;
         case 10:
             std::cout << "INFO" << std::endl;

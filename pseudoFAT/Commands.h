@@ -71,6 +71,10 @@ class Commands {
         bool fileExist(std::string fileName);
 
         int getDirectoryCluster(std::string fileName);
+
+        int getParentCluster(int cluster);
+
+        std::string getDirectoryName(int cluster);
 };
 
 
