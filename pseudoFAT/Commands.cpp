@@ -184,12 +184,23 @@ bool Commands::cat(std::vector<std::string> vectorOfCommands) {
     return false;
 }
 
+/**
+ * Method change a destination where I am
+ * @param vectorOfCommands commands form command line
+ * @return 0 - command succeed, 1 - wrong number of parameters, 2 - file not found
+ */
 int Commands::cd(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
     if(vectorOfCommands.size() != 2){
         return 1;
+    }
+    int fileCluster = getDirectoryCluster(vectorOfCommands[1]);
+    if(fileCluster != 0){
+        mActualCluster = fileCluster;
+    }else{
+        return 2;
     }
     return 0;
 }
@@ -416,9 +427,9 @@ bool Commands::fileExist(std::string fileName){
 /**
  * Method returns if the file is dictionary or not
  * @param fileName name of the file
- * @return true - file is a dictionary, false - file is not a dictionary
+ * @return 0 - if directory not exist or cluster where is the directory
  */
-bool Commands::isDirectory(std::string fileName){
+int Commands::getDirectoryCluster(std::string fileName){
     char data[NAME_OF_FILE_LENGTH];
     int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -436,11 +447,18 @@ bool Commands::isDirectory(std::string fileName){
         }
         if(nameOfTheFile == fileName){
             fileSystem.read(data, 1);
-            fileSystem.close();
             if(*data == 0x01){
-                return true;
+                fileSystem.read(data, mTableCellSize);
+                j = 0;
+                nameOfTheFile = "";
+                while(data[j] != 0x00){
+                    nameOfTheFile += data[j];
+                    j++;
+                }
+                return std::stoi(nameOfTheFile);
             }else{
-                return false;
+                fileSystem.close();
+                return 0;
             }
         }
         i++;
@@ -448,7 +466,7 @@ bool Commands::isDirectory(std::string fileName){
 
     fileSystem.close();
 
-    return false;
+    return 0;
 }
 
 

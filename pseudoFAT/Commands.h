@@ -68,9 +68,9 @@ class Commands {
 
         int getNumberOfFreeClusters();
 
-    bool fileExist(std::string fileName);
+        bool fileExist(std::string fileName);
 
-    bool isDirectory(std::string fileName);
+        int getDirectoryCluster(std::string fileName);
 };
 
 
