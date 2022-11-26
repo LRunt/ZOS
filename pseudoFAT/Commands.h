@@ -13,6 +13,7 @@
 #include <sstream>
 #include <cmath>
 #include <map>
+#include <filesystem>
 
 class Commands {
 
@@ -79,6 +80,8 @@ class Commands {
         int absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles);
 
         void printAllFiles(int cluster);
+
+    void hehe();
 };
 
 

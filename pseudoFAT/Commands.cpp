@@ -163,6 +163,7 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
+    hehe();
     return 0;
 }
 
@@ -273,11 +274,41 @@ bool Commands::info(std::vector<std::string> vectorOfCommands) {
     return false;
 }
 
+/**
+ * Method loads file from hard drive and copy it to the fileSystem
+ * @param vectorOfCommands commands form command line
+ * @return 0 - successfully copied, 1 - wrong number of parameters, 2 - file on hard drive not found, 3 - path in file system not found, 4 - not enough space
+ */
 int Commands::incp(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 3){
+        return 1;
+    }
+    //file on hard drive exists
+    std::fstream input(vectorOfCommands[1], std::ios::in | std::ios::binary);
+    if(!input){
+        return 2;
+    }
+    //path in file system exists
+    int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]));
+    if(cluster == -1){
+        return 3;
+    }
+    int fileSize = std::filesystem::file_size(vectorOfCommands[1]);
+    int numberOfCluster = std::ceil(fileSize/(double)mClusterSize);
+    if(numberOfCluster > getNumberOfFreeClusters()){
+        return 4;
+    }
+    input.close();
     return 0;
 }
 
 bool Commands::outcp(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
     return false;
 }
 
@@ -612,3 +643,9 @@ void Commands::printAllFiles(int cluster){
     fileSystem.close();
 }
 
+void Commands::hehe(){
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * 3);
+    std::cout << fileSystem.tellg() << std::endl;
+    fileSystem.close();
+}
