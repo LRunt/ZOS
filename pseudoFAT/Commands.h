@@ -75,6 +75,8 @@ class Commands {
         int getParentCluster(int cluster);
 
         std::string getDirectoryName(int cluster);
+
+        int absolutePathClusterNumber(std::vector<std::string> vectorOfFiles);
 };
 
 

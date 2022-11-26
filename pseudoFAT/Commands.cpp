@@ -6,8 +6,6 @@
 
 const int LAST_BLOCK = -1;
 const int FREE_BLOCK = -2;
-const char DIRECTORY = 'A';
-const char IS_FILE = 'S';
 const int NAME_OF_FILE_LENGTH = 11;
 
 /** Map of units where key is unit and the size is the value*/
@@ -29,6 +27,22 @@ int getUnitSize(const std::string& unit){
     }else{
         return 0;
     }
+}
+
+/**
+ * Method splits string by slash
+ * @param absolutePath absolute path of the file
+ * @return vector of files
+ */
+std::vector<std::string> splitBySlash(std::string absolutePath){
+    std::istringstream iss(absolutePath);
+    std::vector<std::string> files;
+    std::string token;
+    while (std::getline(iss, token, '/')) {
+        if (!token.empty())
+            files.push_back(token);
+    }
+    return files;
 }
 
 /**
@@ -176,7 +190,22 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method prints the contents of actual directory or directory from path
+ * @param vectorOfCommands command form command line
+ * @return return code 0 - all is ok, 1 - error
+ */
 int Commands::ls(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() == 1){ //ls
+
+    }else if(vectorOfCommands.size() == 2){ //ls a1
+        absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+    }else{
+        return 1;
+    }
     return 0;
 }
 
@@ -221,8 +250,8 @@ std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
 
     std::reverse(files.begin(), files.end());
 
-    for(auto itr = files.begin(); itr != files.end(); ++itr){
-        path += *itr;
+    for(auto & file : files){
+        path += file;
     }
 
     return path;
@@ -484,6 +513,11 @@ int Commands::getDirectoryCluster(std::string fileName){
     return 0;
 }
 
+/**
+ * Method returns parent cluster of the dictionary
+ * @param cluster cluster where we are
+ * @return parent cluster
+ */
 int Commands::getParentCluster(int cluster){
     char data[mTableCellSize];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -501,6 +535,11 @@ int Commands::getParentCluster(int cluster){
     return std::stoi(parentDirectoryCluster);
 }
 
+/**
+ * Method returns directory name
+ * @param cluster cluster of directory
+ * @return directory name
+ */
 std::string Commands::getDirectoryName(int cluster){
     char data[NAME_OF_FILE_LENGTH];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -518,4 +557,11 @@ std::string Commands::getDirectoryName(int cluster){
     return directoryName;
 }
 
+
+int Commands::absolutePathClusterNumber(std::vector<std::string> vectorOfFiles){
+    for(auto & vectorOfFile : vectorOfFiles){
+        std::cout << vectorOfFile << std::endl;
+    }
+    return -1;
+}
 
