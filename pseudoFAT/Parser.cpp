@@ -51,10 +51,9 @@ int Parser::loadCommand(const std::string &command) {
     int commandReturnValue;
     std::vector<std::string> myVector = parseCommand(command);
     switch(getCommandType(myVector[0])){
-        case 0:
+        case 0: //quit
             return 0;
-        case 1:
-            std::cout << "CP" << std::endl;
+        case 1: //cp
             commandReturnValue = mCmd->cp(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
@@ -64,16 +63,13 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "PATH NOT FOUND" << std::endl;
             }
             return 1;
-        case 2:
-            std::cout << "MV" << std::endl;
+        case 2: //mv
             mCmd->mv(myVector);
             return 2;
-        case 3:
-            std::cout << "RM" << std::endl;
+        case 3: //rm
             mCmd->rm(myVector);
             return 3;
-        case 4:
-            std::cout << "MKDIR" << std::endl;
+        case 4: //mkdir
             commandReturnValue = mCmd->mkdir(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
@@ -85,20 +81,19 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "PATH NOT FOUND" << std::endl;
             }
             return 4;
-        case 5:
-            std::cout << "RMDIR" << std::endl;
+        case 5: //rmdir
             mCmd->rmdir(myVector);
             return 5;
-        case 6:
-            std::cout << "LS" << std::endl;
-            mCmd->ls(myVector);
+        case 6: //ls
+            commandReturnValue = mCmd->ls(myVector);
+            if(commandReturnValue){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }
             return 6;
-        case 7:
-            std::cout << "CAT" << std::endl;
+        case 7: //cat
             mCmd->cat(myVector);
             return 7;
-        case 8:
-            std::cout << "CD" << std::endl;
+        case 8: //cd
             commandReturnValue = mCmd->cd(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
@@ -108,24 +103,19 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "PATH NOT FOUND" << std::endl;
             }
             return 8;
-        case 9:
-            std::cout << "PWD" << std::endl;
+        case 9: //pwd
             std::cout << mCmd->pwd(myVector) << std::endl;
             return 9;
-        case 10:
-            std::cout << "INFO" << std::endl;
+        case 10: //info
             mCmd->info(myVector);
             return 10;
-        case 11:
-            std::cout << "INCP" << std::endl;
+        case 11: //incp
             mCmd->incp(myVector);
             return 11;
-        case 12:
-            std::cout << "OUTCP" << std::endl;
+        case 12: //outcp
             mCmd->outcp(myVector);
             return 12;
-        case 13:
-            std::cout << "LOAD" << std::endl;
+        case 13: //load
             commandReturnValue = load(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
@@ -135,7 +125,7 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "FILE NOT FOUND" << std::endl;
             }
             return 13;
-        case 14:
+        case 14: //format
             if(mCmd->format(myVector)){
                 std::cout << "OK" << std::endl;
             }else{

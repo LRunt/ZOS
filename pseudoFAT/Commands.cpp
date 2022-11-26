@@ -45,6 +45,11 @@ std::vector<std::string> splitBySlash(std::string absolutePath){
     return files;
 }
 
+std::string deleteSlash(std::string fileName){
+    fileName.erase(remove(fileName.begin(), fileName.end(), '/'), fileName.end());
+    return fileName;
+}
+
 /**
  * Method to get size of the fileSystem
  * @param input size of the file system - format <number><units>, allowed units are B, kB, MB
@@ -176,12 +181,12 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     }
     if(vectorOfCommands.size() != 2){
         return 1;
-    }else if(fileExist(vectorOfCommands[1])){
+    }else if(fileExist(deleteSlash(vectorOfCommands[1]))){
         return 2;
     }
     int fileCluster = getFreeCluster();
-    writeFileToTheCluster(mActualCluster, vectorOfCommands[1], true, fileCluster);
-    writeFileToTheCluster(fileCluster, vectorOfCommands[1], true, mActualCluster);
+    writeFileToTheCluster(mActualCluster, deleteSlash(vectorOfCommands[1]), true, fileCluster);
+    writeFileToTheCluster(fileCluster, deleteSlash(vectorOfCommands[1]), true, mActualCluster);
     rewriteTableCell(fileCluster, LAST_BLOCK);
     return 0;
 }
@@ -200,9 +205,14 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
         saveFileSystemParameters();
     }
     if(vectorOfCommands.size() == 1){ //ls
-
+        printAllFiles(mActualCluster);
     }else if(vectorOfCommands.size() == 2){ //ls a1
-        absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+        int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+        if(cluster == -1){
+            std::cout << "PATH NOT FOUND" << std::endl;
+        }else{
+            printAllFiles(cluster);
+        }
     }else{
         return 1;
     }
@@ -225,7 +235,7 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-    int fileCluster = getDirectoryCluster(vectorOfCommands[1]);
+    int fileCluster = getDirectoryCluster(deleteSlash(vectorOfCommands[1]), mActualCluster);
     if(fileCluster != 0){
         mActualCluster = fileCluster;
     }else{
@@ -440,7 +450,7 @@ int Commands::getNumberOfFreeClusters(){
  * @param fileName name of the file
  * @return true - folder exist, false - folder not exist
  */
-bool Commands::fileExist(std::string fileName){
+bool Commands::fileExist(const std::string& fileName){
     char data[NAME_OF_FILE_LENGTH];
     int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -473,7 +483,7 @@ bool Commands::fileExist(std::string fileName){
  * @param fileName name of the file
  * @return 0 - if directory not exist or cluster where is the directory
  */
-int Commands::getDirectoryCluster(std::string fileName){
+int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
     int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -481,7 +491,7 @@ int Commands::getDirectoryCluster(std::string fileName){
     std::string nameOfTheFile;
 
     do{
-        fileSystem.seekp(mClusterSize * mActualCluster + (fileInformationLength * i));
+        fileSystem.seekp(mClusterSize * cluster + (fileInformationLength * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
@@ -557,11 +567,48 @@ std::string Commands::getDirectoryName(int cluster){
     return directoryName;
 }
 
-
-int Commands::absolutePathClusterNumber(std::vector<std::string> vectorOfFiles){
+/**
+ * Method returns a number of cluster from absolute path
+ * @param vectorOfFiles parsed directories
+ * @return -1 file not exist or number of a cluster
+ */
+int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles){
+    int cluster = mStartClusterOfData;
     for(auto & vectorOfFile : vectorOfFiles){
-        std::cout << vectorOfFile << std::endl;
+        cluster = getDirectoryCluster(vectorOfFile, cluster);
+        if(cluster == 0){
+            return -1;
+        }
     }
-    return -1;
+    return cluster;
+}
+
+/**
+ * Method prints all files in the cluster
+ * @param cluster number of cluster
+ */
+void Commands::printAllFiles(int cluster){
+    char data[NAME_OF_FILE_LENGTH + 1 +mTableCellSize];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster + NAME_OF_FILE_LENGTH + 1 + mTableCellSize);
+    fileSystem.read(data, NAME_OF_FILE_LENGTH);
+    std::string fileName;
+    while(data[0] != 0x00){
+        int i = 0;
+        while(data[i] != 0x00){
+            fileName += data[i];
+            i++;
+        }
+        fileSystem.read(data, 1 + mTableCellSize);
+        if(data[0] == 0x01){
+            std::cout << "DIR: ";
+        }else{
+            std::cout << "FILE: ";
+        }
+        std::cout << fileName << std::endl;
+        fileName = "";
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+    }
+    fileSystem.close();
 }
 

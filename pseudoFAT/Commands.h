@@ -68,15 +68,17 @@ class Commands {
 
         int getNumberOfFreeClusters();
 
-        bool fileExist(std::string fileName);
+        bool fileExist(const std::string& fileName);
 
-        int getDirectoryCluster(std::string fileName);
+        int getDirectoryCluster(const std::string& fileName, int cluster);
 
         int getParentCluster(int cluster);
 
         std::string getDirectoryName(int cluster);
 
-        int absolutePathClusterNumber(std::vector<std::string> vectorOfFiles);
+        int absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles);
+
+        void printAllFiles(int cluster);
 };
 
 
