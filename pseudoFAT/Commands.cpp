@@ -292,15 +292,30 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
         return 2;
     }
     //path in file system exists
+    std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
     int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]));
     if(cluster == -1){
         return 3;
     }
+    //testing if file fits into the file system
     int fileSize = std::filesystem::file_size(vectorOfCommands[1]);
     int numberOfCluster = std::ceil(fileSize/(double)mClusterSize);
     if(numberOfCluster > getNumberOfFreeClusters()){
         return 4;
     }
+    char data[1];
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    int clusterOfData = getFreeCluster();
+    std::cout << absolutePath[absolutePath.size() - 1] << std::endl;
+    writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, clusterOfData);
+    rewriteTableCell(clusterOfData, LAST_BLOCK);
+    fileSystem.seekp(mClusterSize * clusterOfData);
+    for(int i = 0; i < fileSize; i++){
+        input.read(data, 1);
+        fileSystem.put(*data);
+    }
+    fileSystem.close();
     input.close();
     return 0;
 }
