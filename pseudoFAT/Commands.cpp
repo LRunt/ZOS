@@ -304,16 +304,23 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
         return 4;
     }
     char data[1];
+    int newClusterData;
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster();
-    std::cout << absolutePath[absolutePath.size() - 1] << std::endl;
     writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, clusterOfData);
     rewriteTableCell(clusterOfData, LAST_BLOCK);
     fileSystem.seekp(mClusterSize * clusterOfData);
     for(int i = 0; i < fileSize; i++){
         input.read(data, 1);
         fileSystem.put(*data);
+        if(fileSystem.tellg()%mClusterSize == 0){
+            newClusterData = getFreeCluster();
+            rewriteTableCell(clusterOfData, newClusterData);
+            clusterOfData = newClusterData;
+            rewriteTableCell(clusterOfData, LAST_BLOCK);
+            fileSystem.seekp(mClusterSize * clusterOfData);
+        }
     }
     fileSystem.close();
     input.close();
