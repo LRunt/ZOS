@@ -372,6 +372,8 @@ void Commands::saveFileSystemParameters() {
     if(mActualCluster == -1){
         mActualCluster = mStartClusterOfData;
     }
+
+    mLengthOfFile = NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size() + mTableCellSize; //Name of file - file type - file size - cluster
     fileSystem.close();
 }
 

@@ -56,6 +56,7 @@ class Commands {
         int mTableCellSize;
         int mNumberOfClusters;
         int mStartClusterOfData = 0;
+        int mLengthOfFile;
         //defines where i am
         int mActualCluster = -1;
 
