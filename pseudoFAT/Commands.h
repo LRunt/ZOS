@@ -64,7 +64,7 @@ class Commands {
 
         bool rewriteTableCell(int cluster, int tableNumber);
 
-        void writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int directoryCluster);
+        void writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int size, int directoryCluster);
 
         int getFreeCluster();
 

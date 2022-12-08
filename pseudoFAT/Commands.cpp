@@ -7,6 +7,7 @@
 const int LAST_BLOCK = -1;
 const int FREE_BLOCK = -2;
 const int NAME_OF_FILE_LENGTH = 11;
+const int EMPTY_FILE_SIZE = 0;
 
 /** Map of units where key is unit and the size is the value*/
 std::map<std::string, int> units = {
@@ -150,8 +151,11 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     for(int i = 0; i < mFileSize - mClusterSize - mNumberOfClusters * mTableCellSize; i++){
         fileSystem.write(str, 1);
     }
+
+    mLengthOfFile = NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size() + mTableCellSize; //Name of file - file type - file size - cluster
+    std::cout << mLengthOfFile << std::endl;
     //root file
-    writeFileToTheCluster(mStartClusterOfData, "root", true, -1);
+    writeFileToTheCluster(mStartClusterOfData, "root", true, EMPTY_FILE_SIZE, -1);
 
     fileSystem.close();
 
@@ -186,8 +190,8 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
         return 2;
     }
     int fileCluster = getFreeCluster();
-    writeFileToTheCluster(mActualCluster, deleteSlash(vectorOfCommands[1]), true, fileCluster);
-    writeFileToTheCluster(fileCluster, deleteSlash(vectorOfCommands[1]), true, mActualCluster);
+    writeFileToTheCluster(mActualCluster, deleteSlash(vectorOfCommands[1]), true, EMPTY_FILE_SIZE, fileCluster);
+    writeFileToTheCluster(fileCluster, deleteSlash(vectorOfCommands[1]), true, EMPTY_FILE_SIZE, mActualCluster);
     rewriteTableCell(fileCluster, LAST_BLOCK);
     return 0;
 }
@@ -308,7 +312,7 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster();
-    writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, clusterOfData);
+    writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
     rewriteTableCell(clusterOfData, LAST_BLOCK);
     fileSystem.seekp(mClusterSize * clusterOfData);
     for(int i = 0; i < fileSize; i++){
@@ -426,32 +430,45 @@ bool Commands::rewriteTableCell(int cluster, int tableNumber){
  * @param cluster the cluster into which the file will be written
  * @param fileName name of the file
  * @param isDirectory if the file is directory or not
+ * @param size the size of the file
  * @param directoryCluster the cluster where is the directory stored
  */
-void Commands::writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int directoryCluster){
+void Commands::writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int size, int directoryCluster){
     char data[1];
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int p = 0;
     do{
-        fileSystem.seekp(mClusterSize * cluster + p * (NAME_OF_FILE_LENGTH + 1 + mTableCellSize));
+        fileSystem.seekp(mClusterSize * cluster + p * mLengthOfFile);
         fileSystem.read(data, 1);
         p++;
     } while (*data != 0x00);
 
-    fileSystem.seekp(mClusterSize * cluster + (p-1) * (NAME_OF_FILE_LENGTH + 1 + mTableCellSize));
+    fileSystem.seekp(mClusterSize * cluster + (p-1) * mLengthOfFile);
 
+    //filename
     for(char i : fileName){
         fileSystem.put(i);
     }
     for(int i = fileName.size(); i < NAME_OF_FILE_LENGTH; i++){
         fileSystem.put(0x00);
     }
+
+    //isDictionary
     fileSystem.put(isDirectory);
+
+    //size of the file
+    for(char character: std::to_string(size)){
+        fileSystem.put(character);
+    }
+    for(int i = std::to_string(size).size(); i < std::to_string(mFileSize).size(); i++){
+        fileSystem.put(0x00);
+    }
+
+    //directory cluster
     for(char character : std::to_string(directoryCluster)){
         fileSystem.put(character);
     }
-
     for(int i = std::to_string(directoryCluster).size(); i < mTableCellSize; i++){
         fileSystem.put(0x00);
     }
@@ -540,13 +557,12 @@ bool Commands::fileExist(const std::string& fileName){
  */
 int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
-    int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
     int i = 1;
     std::string nameOfTheFile;
 
     do{
-        fileSystem.seekp(mClusterSize * cluster + (fileInformationLength * i));
+        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
@@ -557,6 +573,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
         if(nameOfTheFile == fileName){
             fileSystem.read(data, 1);
             if(*data == 0x01){
+                fileSystem.read(data, std::to_string(mFileSize).size());
                 fileSystem.read(data, mTableCellSize);
                 j = 0;
                 nameOfTheFile = "";
@@ -645,7 +662,7 @@ int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOf
 void Commands::printAllFiles(int cluster){
     char data[NAME_OF_FILE_LENGTH + 1 +mTableCellSize];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-    fileSystem.seekp(mClusterSize * cluster + NAME_OF_FILE_LENGTH + 1 + mTableCellSize);
+    fileSystem.seekp(mClusterSize * cluster + mLengthOfFile);
     fileSystem.read(data, NAME_OF_FILE_LENGTH);
     std::string fileName;
     while(data[0] != 0x00){
