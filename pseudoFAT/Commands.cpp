@@ -153,7 +153,6 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     }
 
     mLengthOfFile = NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size() + mTableCellSize; //Name of file - file type - file size - cluster
-    std::cout << mLengthOfFile << std::endl;
     //root file
     writeFileToTheCluster(mStartClusterOfData, "root", true, EMPTY_FILE_SIZE, -1);
 
@@ -664,7 +663,7 @@ int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOf
  * @param cluster number of cluster
  */
 void Commands::printAllFiles(int cluster){
-    char data[NAME_OF_FILE_LENGTH + 1 +mTableCellSize];
+    char data[mLengthOfFile];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
     fileSystem.seekp(mClusterSize * cluster + mLengthOfFile);
     fileSystem.read(data, NAME_OF_FILE_LENGTH);
@@ -675,7 +674,7 @@ void Commands::printAllFiles(int cluster){
             fileName += data[i];
             i++;
         }
-        fileSystem.read(data, 1 + mTableCellSize);
+        fileSystem.read(data, 1 + std::to_string(mFileSize).size() + mTableCellSize);
         if(data[0] == 0x01){
             std::cout << "DIR: ";
         }else{

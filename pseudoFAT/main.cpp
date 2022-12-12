@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
 
     while(loop){
 
-        std::cout << "~$ ";
+        std::cout << "~$";
 
         std::getline(std::cin, input);
 
