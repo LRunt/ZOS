@@ -256,7 +256,6 @@ std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
     }
     std::vector<std::string> files;
     int actualDirectory = mActualCluster;
-    //std::cout << getParentCluster(actualDirectory) << std::endl;
 
     while(actualDirectory != -1){
         files.push_back(getDirectoryName(actualDirectory));
@@ -296,6 +295,7 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
         return 2;
     }
     //path in file system exists
+    std::replace(vectorOfCommands[1].begin(), vectorOfCommands[1].end(), '\\', '/');
     std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
     int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]));
     if(cluster == -1){
