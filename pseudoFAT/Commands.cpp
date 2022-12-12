@@ -420,6 +420,10 @@ bool Commands::rewriteTableCell(int cluster, int tableNumber){
         fileSystem.put(numberArray[i]);
     }
 
+    for(int i = tempString.size(); i < mTableCellSize; i++){
+        fileSystem.put(0x00);
+    }
+
     fileSystem.close();
 
     return true;
