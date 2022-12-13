@@ -124,7 +124,16 @@ int Parser::loadCommand(const std::string &command) {
             }
             return 11;
         case 12: //outcp
-            mCmd->outcp(myVector);
+            commandReturnValue = mCmd->outcp(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 3){
+                std::cout << "PATH NOT FOUND" << std::endl;
+            }
             return 12;
         case 13: //load
             commandReturnValue = load(myVector);

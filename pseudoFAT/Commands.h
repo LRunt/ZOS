@@ -45,7 +45,7 @@ class Commands {
 
         int incp(std::vector<std::string> vectorOfCommands);
 
-        bool outcp(std::vector<std::string> vectorOfCommands);
+        int outcp(std::vector<std::string> vectorOfCommands);
 
         void saveFileSystemParameters();
 

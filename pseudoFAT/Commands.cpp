@@ -330,11 +330,16 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
-bool Commands::outcp(std::vector<std::string> vectorOfCommands) {
+int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
-    return false;
+
+    if(vectorOfCommands.size() != 3){
+        return 1;
+    }
+
+    return 0;
 }
 
 /**
