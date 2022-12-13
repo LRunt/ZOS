@@ -8,6 +8,9 @@ const int LAST_BLOCK = -1;
 const int FREE_BLOCK = -2;
 const int NAME_OF_FILE_LENGTH = 11;
 const int EMPTY_FILE_SIZE = 0;
+const int BOTH = 0;
+const int DIRECTORY = 1;
+const int FILE_TYPE = 2;
 
 /** Map of units where key is unit and the size is the value*/
 std::map<std::string, int> units = {
@@ -210,7 +213,7 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() == 1){ //ls
         printAllFiles(mActualCluster);
     }else if(vectorOfCommands.size() == 2){ //ls a1
-        int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+        int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
         if(cluster == -1){
             std::cout << "PATH NOT FOUND" << std::endl;
         }else{
@@ -238,8 +241,9 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
+
     int fileCluster = getDirectoryCluster(deleteSlash(vectorOfCommands[1]), mActualCluster);
-    if(fileCluster != 0){
+    if(fileCluster != -1){
         mActualCluster = fileCluster;
     }else{
         return 2;
@@ -283,9 +287,9 @@ int Commands::info(std::vector<std::string> vectorOfCommands) {
     }
     int cluster;
     if(vectorOfCommands[1][0] == '/'){
-        cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+        cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), BOTH);
     }else{
-        cluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        cluster = getCluster(vectorOfCommands[1], mActualCluster);
     }
     if(cluster == -1){
         return 2;
@@ -319,7 +323,7 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     //path in file system exists
     std::replace(vectorOfCommands[1].begin(), vectorOfCommands[1].end(), '\\', '/');
     std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
-    int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]));
+    int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]), DIRECTORY);
     if(cluster == -1){
         return 3;
     }
@@ -357,9 +361,21 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
-
     if(vectorOfCommands.size() != 3){
         return 1;
+    }
+    int cluster;
+    if(vectorOfCommands[1][0] == '/'){
+        cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
+    }else{
+        cluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+    }
+    if(cluster == -1){
+        return 2;
+    }
+    std::filesystem::path filepath = std::string(vectorOfCommands[2]);
+    if(!std::filesystem::is_directory(filepath.parent_path())){
+        return 3;
     }
 
     return 0;
@@ -627,11 +643,56 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
 }
 
 /**
+ * Method returns if the file is file or not
+ * @param fileName name of the file
+ * @return -1 - if file not exist or cluster where is the directory
+ */
+int Commands::getFileCluster(const std::string& fileName, int cluster){
+    char data[NAME_OF_FILE_LENGTH];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    int i = 1;
+    std::string nameOfTheFile;
+
+    do{
+        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            fileSystem.read(data, 1);
+            if(*data == 0x00){
+                fileSystem.read(data, std::to_string(mFileSize).size());
+                fileSystem.read(data, mTableCellSize);
+                j = 0;
+                nameOfTheFile = "";
+                while(data[j] != 0x00){
+                    nameOfTheFile += data[j];
+                    j++;
+                }
+                return std::stoi(nameOfTheFile);
+            }else{
+                fileSystem.close();
+                return -1;
+            }
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return -1;
+}
+
+/**
  * Method returns cluster of the file
  * @param fileName name of the file
  * @return cluster of file, -1 if file not exists
  */
-int Commands::getFileCluster(const std::string& fileName, int cluster){
+int Commands::getCluster(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
     int i = 1;
@@ -713,12 +774,30 @@ std::string Commands::getDirectoryName(int cluster){
 /**
  * Method returns a number of cluster from absolute path
  * @param vectorOfFiles parsed directories
+ * @param type 0 - both (file and directory), 1 - directory, 2- file
  * @return -1 file not exist or number of a cluster
  */
-int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles){
+int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
     int cluster = mStartClusterOfData;
-    for(auto & vectorOfFile : vectorOfFiles){
-        cluster = getDirectoryCluster(vectorOfFile, cluster);
+    for(auto itr = vectorOfFiles.begin(); itr < vectorOfFiles.end() - 1; itr++){
+        std::cout << *itr << std::endl;
+        cluster = getDirectoryCluster(*itr, cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }
+    if(type == BOTH){
+        cluster = getCluster(*vectorOfFiles.end(), cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }else if(type == DIRECTORY){
+        cluster = getDirectoryCluster(*vectorOfFiles.end(), cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }else{
+        cluster = getFileCluster(*vectorOfFiles.end(), cluster);
         if(cluster == -1){
             return -1;
         }

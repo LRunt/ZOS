@@ -78,11 +78,13 @@ class Commands {
 
         std::string getDirectoryName(int cluster);
 
-        int absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles);
+        int absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type);
 
         void printAllFiles(int cluster);
 
-        int getFileCluster(const std::string &fileName, int cluster);
+        int getCluster(const std::string &fileName, int cluster);
+
+        int getFileCluster(const std::string& fileName, int cluster);
 };
 
 
