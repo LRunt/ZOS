@@ -82,7 +82,7 @@ class Commands {
 
         void printAllFiles(int cluster);
 
-    void hehe();
+        int getFileCluster(const std::string &fileName, int cluster);
 };
 
 
