@@ -41,7 +41,7 @@ class Commands {
 
         std::string pwd(std::vector<std::string> vectorOfCommands);
 
-        bool info(std::vector<std::string> vectorOfCommands);
+        int info(std::vector<std::string> vectorOfCommands);
 
         int incp(std::vector<std::string> vectorOfCommands);
 

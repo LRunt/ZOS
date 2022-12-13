@@ -253,6 +253,9 @@ std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
+    if(vectorOfCommands.size() != 1){
+        return "COMMAND NOT FOUND";
+    }
     std::vector<std::string> files;
     int actualDirectory = mActualCluster;
 
@@ -264,16 +267,30 @@ std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
     std::reverse(files.begin(), files.end());
 
     for(auto & file : files){
-        path += file;
+        path += file + '/';
     }
 
-    return path;
+    return path.substr(0, path.length()-1);
 }
 
-bool Commands::info(std::vector<std::string> vectorOfCommands) {
-    mActualCluster = 3;
-    fileExist(vectorOfCommands[1]);
-    return false;
+int Commands::info(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    int cluster;
+    if(vectorOfCommands[1][0] == '/'){
+        cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]));
+    }else{
+        cluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+    }
+    std::cout << cluster << std::endl;
+    if(cluster == -1){
+        return 2;
+    }
+    return 0;
 }
 
 /**
@@ -532,7 +549,7 @@ int Commands::getNumberOfFreeClusters(){
  */
 bool Commands::fileExist(const std::string& fileName){
     char data[NAME_OF_FILE_LENGTH];
-    int fileInformationLength = NAME_OF_FILE_LENGTH + 1 + std::to_string(mNumberOfClusters).size() + 1;
+    int fileInformationLength = mLengthOfFile;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
     int i = 1;
     std::string nameOfTheFile;
@@ -561,7 +578,7 @@ bool Commands::fileExist(const std::string& fileName){
 /**
  * Method returns if the file is dictionary or not
  * @param fileName name of the file
- * @return 0 - if directory not exist or cluster where is the directory
+ * @return -1 - if directory not exist or cluster where is the directory
  */
 int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
@@ -592,7 +609,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
                 return std::stoi(nameOfTheFile);
             }else{
                 fileSystem.close();
-                return 0;
+                return -1;
             }
         }
         i++;
@@ -600,7 +617,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
 
     fileSystem.close();
 
-    return 0;
+    return -1;
 }
 
 /**
@@ -611,7 +628,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
 int Commands::getParentCluster(int cluster){
     char data[mTableCellSize];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-    fileSystem.seekp(mClusterSize * cluster + NAME_OF_FILE_LENGTH + 1);
+    fileSystem.seekp(mClusterSize * cluster + NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size());
     fileSystem.read(data, mTableCellSize);
 
     std::string parentDirectoryCluster;

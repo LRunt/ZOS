@@ -109,7 +109,12 @@ int Parser::loadCommand(const std::string &command) {
             std::cout << mCmd->pwd(myVector) << std::endl;
             return 9;
         case 10: //info
-            mCmd->info(myVector);
+            commandReturnValue = mCmd->info(myVector);
+            if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }
             return 10;
         case 11: //incp
             commandReturnValue = mCmd->incp(myVector);
