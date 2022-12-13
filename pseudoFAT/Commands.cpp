@@ -785,7 +785,6 @@ std::string Commands::getDirectoryName(int cluster){
 int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
     int cluster = mStartClusterOfData;
     for(int i = 0; i < vectorOfFiles.size() - 1; i++){
-        std::cout << vectorOfFiles[i] << std::endl;
         cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
         if(cluster == -1){
             return -1;
@@ -797,7 +796,6 @@ int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOf
             return -1;
         }
     }else if(type == DIRECTORY){
-        std::cout << vectorOfFiles[vectorOfFiles.size()-1] << std::endl;
         cluster = getDirectoryCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
         if(cluster == -1){
             return -1;
