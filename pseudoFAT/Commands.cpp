@@ -241,8 +241,12 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-
-    int fileCluster = getDirectoryCluster(deleteSlash(vectorOfCommands[1]), mActualCluster);
+    int fileCluster;
+    if(vectorOfCommands[1][0] == '/'){
+        fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+    }else{
+        fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+    }
     if(fileCluster != -1){
         mActualCluster = fileCluster;
     }else{
@@ -699,6 +703,7 @@ int Commands::getCluster(const std::string& fileName, int cluster){
     std::string nameOfTheFile;
 
     do{
+        std::cout << "hehe" << std::endl;
         fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
@@ -779,25 +784,26 @@ std::string Commands::getDirectoryName(int cluster){
  */
 int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
     int cluster = mStartClusterOfData;
-    for(auto itr = vectorOfFiles.begin(); itr < vectorOfFiles.end() - 1; itr++){
-        std::cout << *itr << std::endl;
-        cluster = getDirectoryCluster(*itr, cluster);
+    for(int i = 0; i < vectorOfFiles.size() - 1; i++){
+        std::cout << vectorOfFiles[i] << std::endl;
+        cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
         if(cluster == -1){
             return -1;
         }
     }
     if(type == BOTH){
-        cluster = getCluster(*vectorOfFiles.end(), cluster);
+        cluster = getCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
         if(cluster == -1){
             return -1;
         }
     }else if(type == DIRECTORY){
-        cluster = getDirectoryCluster(*vectorOfFiles.end(), cluster);
+        std::cout << vectorOfFiles[vectorOfFiles.size()-1] << std::endl;
+        cluster = getDirectoryCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
         if(cluster == -1){
             return -1;
         }
     }else{
-        cluster = getFileCluster(*vectorOfFiles.end(), cluster);
+        cluster = getFileCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
         if(cluster == -1){
             return -1;
         }
