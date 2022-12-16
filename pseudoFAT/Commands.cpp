@@ -242,16 +242,19 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-    int fileCluster;
+    int fileCluster, fileSize;
     if(vectorOfCommands[1][0] == '/'){
         fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
+        fileSize = getFileSizeAbsolute(splitBySlash(vectorOfCommands[1]));
     }else{
         fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
     }
     if(fileCluster == -1){
         return 2;
     }
-    std::cout << readDataFromCluster(3, 24) << std::endl;
+    fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
+    std::cout << readDataFromCluster(fileCluster, fileSize) << std::endl;
     return 0;
 }
 
@@ -877,5 +880,66 @@ std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
     fileSystem.seekp(mClusterSize * cluster);
     fileSystem.read(data, numberOfCharacters);
     output += data;
-    return output;
+    return output.substr(0, numberOfCharacters);
+}
+
+/**
+ *
+ * @param fileName
+ * @param cluster
+ * @return
+ */
+int Commands::getFileSize(const std::string& fileName, int cluster){
+    char data[NAME_OF_FILE_LENGTH];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+
+    int i = 1;
+    std::string nameOfTheFile;
+
+    do{
+        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            fileSystem.read(data, 1);
+            fileSystem.read(data, std::to_string(mFileSize).size());
+            j = 0;
+            nameOfTheFile = "";
+            while(data[j] != 0x00){
+                nameOfTheFile += data[j];
+                j++;
+            }
+            return std::stoi(nameOfTheFile);
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return -1;
+}
+
+/**
+ *
+ * @param vectorOfFiles
+ * @return
+ */
+int Commands::getFileSizeAbsolute(const std::vector<std::string>& vectorOfFiles){
+    int cluster = mStartClusterOfData;
+    for(int i = 0; i < vectorOfFiles.size() - 1; i++){
+        cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }
+    int fileSize = getFileSize(vectorOfFiles[vectorOfFiles.size()-1], cluster);
+    if(fileSize == -1){
+        return -1;
+    }
+    return fileSize;
 }

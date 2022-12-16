@@ -87,6 +87,10 @@ class Commands {
         int getFileCluster(const std::string& fileName, int cluster);
 
         std::string readDataFromCluster(int cluster, int numberOfCharacters);
+
+        int getFileSize(const std::string &fileName, int cluster);
+
+        int getFileSizeAbsolute(const std::vector<std::string> &vectorOfFiles);
 };
 
 
