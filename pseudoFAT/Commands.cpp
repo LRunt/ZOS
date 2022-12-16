@@ -213,11 +213,16 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() == 1){ //ls
         printAllFiles(mActualCluster);
     }else if(vectorOfCommands.size() == 2){ //ls a1
-        int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
-        if(cluster == -1){
+        int fileCluster;
+        if(vectorOfCommands[1][0] == '/'){
+            fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+        }else{
+            fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+        }
+        if(fileCluster == -1){
             std::cout << "PATH NOT FOUND" << std::endl;
         }else{
-            printAllFiles(cluster);
+            printAllFiles(fileCluster);
         }
     }else{
         return 1;
@@ -225,8 +230,29 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
-bool Commands::cat(std::vector<std::string> vectorOfCommands) {
-    return false;
+/**
+ * Method prints the file content
+ * @param vectorOfCommands command form the command line
+ * @return 0 - founded and printed, 1 - wrong number of parameters, 2 - path not found
+ */
+int Commands::cat(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    int fileCluster;
+    if(vectorOfCommands[1][0] == '/'){
+        fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+    }else{
+        fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+    }
+    if(fileCluster == -1){
+        return 2;
+    }
+    std::cout << "OK" << std::endl;
+    return 0;
 }
 
 /**
@@ -703,7 +729,6 @@ int Commands::getCluster(const std::string& fileName, int cluster){
     std::string nameOfTheFile;
 
     do{
-        std::cout << "hehe" << std::endl;
         fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";

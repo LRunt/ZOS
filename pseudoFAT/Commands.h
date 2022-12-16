@@ -35,7 +35,7 @@ class Commands {
 
         int ls(std::vector<std::string> vectorOfCommands);
 
-        bool cat(std::vector<std::string> vectorOfCommands);
+        int cat(std::vector<std::string> vectorOfCommands);
 
         int cd(std::vector<std::string> vectorOfCommands);
 
