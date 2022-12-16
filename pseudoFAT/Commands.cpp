@@ -233,7 +233,7 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
 /**
  * Method prints the file content
  * @param vectorOfCommands command form the command line
- * @return 0 - founded and printed, 1 - wrong number of parameters, 2 - path not found
+ * @return 0 - founded and printed, 1 - wrong number of parameters, 2 - path not found, 3 - broken data
  */
 int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -253,7 +253,14 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(fileCluster == -1){
         return 2;
     }
-    fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
+    while(fileSize > mClusterSize){
+        std::cout << readDataFromCluster(fileCluster, mClusterSize);
+        fileSize -= mClusterSize;
+        fileCluster = getNumberFromFat(fileCluster);
+        if(fileCluster == -1){
+            return 3;
+        }
+    }
     std::cout << readDataFromCluster(fileCluster, fileSize) << std::endl;
     return 0;
 }
@@ -884,10 +891,10 @@ std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
 }
 
 /**
- *
- * @param fileName
- * @param cluster
- * @return
+ * Method returns file size
+ * @param fileName name of the file
+ * @param cluster cluster where we search
+ * @return file size in bites
  */
 int Commands::getFileSize(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
@@ -925,9 +932,9 @@ int Commands::getFileSize(const std::string& fileName, int cluster){
 }
 
 /**
- *
- * @param vectorOfFiles
- * @return
+ * Method returns file size by absolute path
+ * @param vectorOfFiles absolute path
+ * @return size of the file
  */
 int Commands::getFileSizeAbsolute(const std::vector<std::string>& vectorOfFiles){
     int cluster = mStartClusterOfData;
