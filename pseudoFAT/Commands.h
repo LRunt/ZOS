@@ -85,6 +85,8 @@ class Commands {
         int getCluster(const std::string &fileName, int cluster);
 
         int getFileCluster(const std::string& fileName, int cluster);
+
+        std::string readDataFromCluster(int cluster, int numberOfCharacters);
 };
 
 

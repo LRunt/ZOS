@@ -96,7 +96,7 @@ int Parser::loadCommand(const std::string &command) {
             commandReturnValue = mCmd->cat(myVector);
             if(commandReturnValue == 1){
                 std::cout << command << ": COMMAND NOT FOUND" << std::endl;
-            }else{
+            }else if (commandReturnValue != 0){
                 std::cout << "PATH NOT FOUND" << std::endl;
             }
             return 7;

@@ -244,14 +244,14 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
     }
     int fileCluster;
     if(vectorOfCommands[1][0] == '/'){
-        fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+        fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
     }else{
-        fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
     }
     if(fileCluster == -1){
         return 2;
     }
-    std::cout << "OK" << std::endl;
+    std::cout << readDataFromCluster(3, 24) << std::endl;
     return 0;
 }
 
@@ -861,4 +861,21 @@ void Commands::printAllFiles(int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
     }
     fileSystem.close();
+}
+
+/**
+ * Method reads data from cluster and returns string of it
+ * @param cluster cluster where is data stored
+ * @param numberOfCharacters number of characters in cluster
+ * @return data what was loaded
+ */
+std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
+    std::string output;
+    char data[numberOfCharacters];
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName,  std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster);
+    fileSystem.read(data, numberOfCharacters);
+    output += data;
+    return output;
 }
