@@ -49,6 +49,11 @@ std::vector<std::string> splitBySlash(std::string absolutePath){
     return files;
 }
 
+/**
+ * Method deletes slashes from string and return vector of strings
+ * @param fileName path of the file
+ * @return vector of the dictionaries and files
+ */
 std::string deleteSlash(std::string fileName){
     fileName.erase(remove(fileName.begin(), fileName.end(), '/'), fileName.end());
     return fileName;
@@ -165,14 +170,29 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
 }
 
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 3){
+        return 1;
+    }
+
+    int fromCluster, toCluster;
+
     return 0;
 }
 
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
     return 0;
 }
 
 bool Commands::rm(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
     return 0;
 }
 
@@ -198,6 +218,9 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
 }
 
 int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
     return 0;
 }
 
@@ -291,6 +314,11 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method prints path of actual directory
+ * @param vectorOfCommands commands form command line
+ * @return string with path of the actual directory, -1 of there are more parameters
+ */
 std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
     std::string path;
     if(mActualCluster == -1){
@@ -316,6 +344,11 @@ std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
     return path.substr(0, path.length()-1);
 }
 
+/**
+ * Method prints in what clusters the file or directory is
+ * @param vectorOfCommands commands form command line
+ * @return 0 - the command was successful, 1 - wrong number of arguments, 2 - if the file was not found
+ */
 int Commands::info(std::vector<std::string> vectorOfCommands) {
     std::string output;
 
@@ -397,6 +430,11 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method copy a file from my file system to real file system
+ * @param vectorOfCommands commands form command line
+ * @return 0 - successfully copied, 1 - wrong number of parameters, 2 - file not exist, 3 - path in real file system not exists
+ */
 int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
