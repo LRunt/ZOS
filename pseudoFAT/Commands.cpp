@@ -404,19 +404,34 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 3){
         return 1;
     }
-    int cluster;
+    int cluster, fileSize;
     if(vectorOfCommands[1][0] == '/'){
         cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
+        fileSize = getFileSizeAbsolute(splitBySlash(vectorOfCommands[1]));
     }else{
         cluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
     }
     if(cluster == -1){
         return 2;
     }
-    std::filesystem::path filepath = std::string(vectorOfCommands[2]);
-    if(!std::filesystem::is_directory(filepath.parent_path())){
+    std::ofstream file(vectorOfCommands[2], std::ios::out | std::ios::binary);
+    if(!file){
         return 3;
     }
+    std::string data;
+    while(fileSize > mClusterSize){
+        data = readDataFromCluster(cluster, mClusterSize);
+        file << data;
+        fileSize -= mClusterSize;
+        cluster = getNumberFromFat(cluster);
+        if(cluster == -1){
+            return 3;
+        }
+    }
+    data = readDataFromCluster(cluster, fileSize);
+    file << data;
+    file.close();
 
     return 0;
 }
