@@ -71,24 +71,25 @@ int Parser::loadCommand(const std::string &command) {
             mCmd->mv(myVector);
             return 2;
         case 3: //rm
-            mCmd->rm(myVector);
+            commandReturnValue = mCmd->rm(myVector);
             return 3;
         case 4: //mkdir
             commandReturnValue = mCmd->mkdir(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
-            }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
-            }else if(commandReturnValue == 2){
-                std::cout << "EXIST" << std::endl;
-            }else if(commandReturnValue == 3){
-                std::cout << "PATH NOT FOUND" << std::endl;
-            }else{
-                std::cout << "NOT ENOUGH SPACE" << std::endl;
             }
             return 4;
         case 5: //rmdir
-            mCmd->rmdir(myVector);
+            commandReturnValue = mCmd->rmdir(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }else{
+                std::cout << "NOT EMPTY" << std::endl;
+            }
             return 5;
         case 6: //ls
             commandReturnValue = mCmd->ls(myVector);

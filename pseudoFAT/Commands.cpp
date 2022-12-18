@@ -265,6 +265,18 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
+    int directoryCluster;
+    if(vectorOfCommands[1][0] == '/'){
+        directoryCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+    }else{
+        directoryCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+    }
+    if(directoryCluster == -1){
+        return 2;
+    }
+    if(!isDirectoryEmpty(directoryCluster)){
+        return 3;
+    }
     return 0;
 }
 
@@ -1046,4 +1058,21 @@ int Commands::getFileSizeAbsolute(const std::vector<std::string>& vectorOfFiles)
         return -1;
     }
     return fileSize;
+}
+
+/**
+ * Method returns if is the cluster empty or not
+ * @param cluster number of cluster of the directory
+ * @return true - it is empty, false - it is not empty (in directory is file)
+ */
+bool Commands::isDirectoryEmpty(int cluster){
+    char data[1];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster + mLengthOfFile);
+    fileSystem.read(data, 1);
+    fileSystem.close();
+    if(*data != 0x00){
+        return false;
+    }
+    return true;
 }

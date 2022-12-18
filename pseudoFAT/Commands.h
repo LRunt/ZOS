@@ -1,5 +1,5 @@
 //
-// Created by Lenovo on 12.11.2022.
+// Created by Lukas Runt on 12.11.2022.
 //
 
 #ifndef PSEUDOFAT_COMMANDS_H
@@ -91,6 +91,8 @@ class Commands {
         int getFileSize(const std::string &fileName, int cluster);
 
         int getFileSizeAbsolute(const std::vector<std::string> &vectorOfFiles);
+
+    bool isDirectoryEmpty(int cluster);
 };
 
 
