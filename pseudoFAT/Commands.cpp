@@ -177,7 +177,48 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
         return 1;
     }
 
-    int fromCluster, toCluster;
+    int fromCluster, toCluster, fileSize;
+    if(vectorOfCommands[1][0] == '/'){
+        fromCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
+        fileSize = getFileSizeAbsolute(splitBySlash(vectorOfCommands[1]));
+    }else{
+        fromCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
+    }
+    if(fromCluster == -1){
+        return 2;
+    }
+    if(vectorOfCommands[2][0] == '/'){
+        toCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]), DIRECTORY);
+    }else{
+        toCluster = getDirectoryCluster(vectorOfCommands[2], mActualCluster);
+    }
+    std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
+    if(toCluster == -1){
+        return 3;
+    }
+
+    int numberOfClusters = std::ceil(fileSize/(double)mClusterSize);
+    if(numberOfClusters > getNumberOfFreeClusters()){
+        return 4;
+    }
+    std::string data;
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    int clusterOfData = getFreeCluster();
+    writeFileToTheCluster(toCluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
+    while(fileSize > mClusterSize){
+        data = readDataFromCluster(fromCluster, mClusterSize);
+        //vypsání dat do dalšího clusteru
+        //zapsání do tabulky
+        fileSize -= mClusterSize;
+        fromCluster = getNumberFromFat(fromCluster);
+        clusterOfData = getFreeCluster();
+        if(fromCluster == -1){
+            return 5;
+        }
+    }
+    data = readDataFromCluster(fromCluster, fileSize);
 
     return 0;
 }
@@ -220,6 +261,9 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
 int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
     }
     return 0;
 }
