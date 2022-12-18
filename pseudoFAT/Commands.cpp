@@ -240,7 +240,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 /**
  * Method make a new file if file not exist
  * @param vectorOfCommands commands from command line
- * @return 0 - File was created, 1 - wrong number of parameters, 2 - file already exist
+ * @return 0 - File was created, 1 - wrong number of parameters, 2 - file already exist, 3 - path not found
  */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -258,6 +258,11 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method removes directory from file system, if it is empty
+ * @param vectorOfCommands commands from command line
+ * @return 0 - file was removed, 1 - wrong number of parameters, 2 - file not found, 3 - file is not empty
+ */
 int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
@@ -276,6 +281,9 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     }
     if(!isDirectoryEmpty(directoryCluster)){
         return 3;
+    }else{
+        clearCluster(directoryCluster);
+        rewriteTableCell(directoryCluster, FREE_BLOCK);
     }
     return 0;
 }
@@ -1075,4 +1083,17 @@ bool Commands::isDirectoryEmpty(int cluster){
         return false;
     }
     return true;
+}
+
+/**
+ * Method deletes everything in the cluster and rewrites it with 0x00
+ * @param cluster number of cluster
+ */
+void Commands::clearCluster(int cluster){
+    std::fstream fileSystem(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster);
+    for(int i = 0; i < mClusterSize; i++){
+        fileSystem.put(0x00);
+    }
+    fileSystem.close();
 }

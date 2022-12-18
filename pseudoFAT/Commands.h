@@ -93,6 +93,8 @@ class Commands {
         int getFileSizeAbsolute(const std::vector<std::string> &vectorOfFiles);
 
     bool isDirectoryEmpty(int cluster);
+
+    void clearCluster(int cluster);
 };
 
 
