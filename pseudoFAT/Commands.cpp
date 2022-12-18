@@ -240,7 +240,7 @@ bool Commands::rm(std::vector<std::string> vectorOfCommands) {
 /**
  * Method make a new file if file not exist
  * @param vectorOfCommands commands from command line
- * @return 0 - File was created, 1 - wrong number of parameters, 2 - file already exist, 3 - path not found
+ * @return 0 - File was created, 1 - wrong number of parameters, 3 - file already exist, 2 - path not found
  */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -270,7 +270,7 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-    int directoryCluster;
+    int directoryCluster, parentCluster;
     if(vectorOfCommands[1][0] == '/'){
         directoryCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
     }else{
@@ -282,8 +282,10 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(!isDirectoryEmpty(directoryCluster)){
         return 3;
     }else{
+        parentCluster = getParentCluster(directoryCluster);
         clearCluster(directoryCluster);
         rewriteTableCell(directoryCluster, FREE_BLOCK);
+        deleteFileFromDirectory(parentCluster, vectorOfCommands[1]);
     }
     return 0;
 }
@@ -1096,4 +1098,49 @@ void Commands::clearCluster(int cluster){
         fileSystem.put(0x00);
     }
     fileSystem.close();
+}
+
+/**
+ * Method removes file (file name, type, size, cluster) from dictionary
+ * @param cluster cluster where we will delete the file
+ * @param fileName name of the file
+ */
+void Commands::deleteFileFromDirectory(int cluster, std::string fileName){
+    char data[mLengthOfFile];
+    std::fstream fileSystem(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    int actualPosition = mLengthOfFile, i = 0, founded = 0, j;
+    std::string name;
+    fileSystem.seekp(mClusterSize * cluster + actualPosition);
+    while(!founded && (actualPosition + mLengthOfFile) < mClusterSize){
+        fileSystem.read(data, mLengthOfFile);
+        i++;
+        actualPosition = mLengthOfFile * i;
+        j = 0;
+        while(data[j] != 0x00){
+            name += data[j];
+            j++;
+        }
+        if(name == fileName){
+            founded = 1;
+            //deleting the file
+            fileSystem.seekp(cluster * mClusterSize + actualPosition);
+            for(int k = 0; k < mLengthOfFile; k++){
+                fileSystem.put(0x00);
+            }
+
+            //transfer other files
+            while(data[0] != 0x00){
+                fileSystem.seekp(cluster * mClusterSize + (mLengthOfFile * (i + 1)));
+                fileSystem.read(data, mLengthOfFile);
+                fileSystem.seekp(cluster * mClusterSize + actualPosition);
+                fileSystem.write(data, mLengthOfFile);
+                i++;
+                actualPosition = mLengthOfFile * i;
+            }
+            for(int k = 0; k < mLengthOfFile; k++){
+                fileSystem.put(0x00);
+            }
+        }
+        name = "";
+    }
 }

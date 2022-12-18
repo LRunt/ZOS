@@ -95,6 +95,8 @@ class Commands {
     bool isDirectoryEmpty(int cluster);
 
     void clearCluster(int cluster);
+
+    void deleteFileFromDirectory(int cluster, std::string fileName);
 };
 
 

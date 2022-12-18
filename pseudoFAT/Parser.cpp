@@ -77,6 +77,12 @@ int Parser::loadCommand(const std::string &command) {
             commandReturnValue = mCmd->mkdir(myVector);
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "PATH NOT FOUND" << std::endl;
+            }else{
+                std::cout << "EXIST" << std::endl;
             }
             return 4;
         case 5: //rmdir
