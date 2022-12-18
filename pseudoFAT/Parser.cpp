@@ -72,6 +72,13 @@ int Parser::loadCommand(const std::string &command) {
             return 2;
         case 3: //rm
             commandReturnValue = mCmd->rm(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else{
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }
             return 3;
         case 4: //mkdir
             commandReturnValue = mCmd->mkdir(myVector);

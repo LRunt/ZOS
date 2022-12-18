@@ -27,7 +27,7 @@ class Commands {
 
         int mv(std::vector<std::string> vectorOfCommands);
 
-        bool rm(std::vector<std::string> vectorOfCommands);
+        int rm(std::vector<std::string> vectorOfCommands);
 
         int mkdir(std::vector<std::string> vectorOfCommands);
 

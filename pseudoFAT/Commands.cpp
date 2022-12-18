@@ -80,7 +80,7 @@ std::vector<std::string> getSize(const std::string& input) {
 
 /**
  * Command format <sizeOfFileSystem> - creating the new file system, with defined size
- * @param myVectorOfCommands
+ * @param myVectorOfCommands commands from command line
  * @return true-fileSystem was created, false-creating of file system failed
  */
 bool Commands::format(std::vector<std::string> myVectorOfCommands) {
@@ -169,6 +169,11 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
     return true;
 }
 
+/**
+ * Method copy a file to another directory in pseudoFAT system
+ * @param vectorOfCommands commands from command line
+ * @return 0 - if copy was successful, 1 - wrong number of arguments, 2 - file not found, 3 - path not found, 4 - there is not enough space
+ */
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
@@ -230,17 +235,47 @@ int Commands::mv(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
-bool Commands::rm(std::vector<std::string> vectorOfCommands) {
+/**
+ * Method remove file from the file system
+ * @param vectorOfCommands commands from command line
+ * @return 0 - File was successfully deleted, 1 - wrong number of arguments, 2 - file not found
+ */
+int Commands::rm(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    int fileCluster, parentCluster, oldCluster;
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
+    std::string fileName = path[path.size() - 1];
+    if(vectorOfCommands[1][0] == '/'){
+        fileCluster = absolutePathClusterNumber(path, FILE_TYPE);
+        path.pop_back();
+        parentCluster = absolutePathClusterNumber(path, DIRECTORY);
+    }else{
+        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        parentCluster = mActualCluster;
+    }
+    if(fileCluster == -1 || parentCluster == -1){
+        return 2;
+    }
+    //deleting data and clearing table
+    while(fileCluster != -1){
+        clearCluster(fileCluster);
+        oldCluster = fileCluster;
+        fileCluster = getNumberFromFat(fileCluster);
+        rewriteTableCell(oldCluster, FREE_BLOCK);
+    }
+    deleteFileFromDirectory(parentCluster, fileName);
     return 0;
 }
 
 /**
  * Method make a new file if file not exist
  * @param vectorOfCommands commands from command line
- * @return 0 - File was created, 1 - wrong number of parameters, 3 - file already exist, 2 - path not found
+ * @return 0 - File was created, 1 - wrong number of parameters, 2 - path not found, 3 - file already exist
  */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
