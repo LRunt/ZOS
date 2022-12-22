@@ -38,7 +38,7 @@ int getUnitSize(const std::string& unit){
  * @param absolutePath absolute path of the file
  * @return vector of files
  */
-std::vector<std::string> splitBySlash(std::string absolutePath){
+std::vector<std::string> splitBySlash(const std::string& absolutePath){
     std::istringstream iss(absolutePath);
     std::vector<std::string> files;
     std::string token;
@@ -228,10 +228,48 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     return 0;
 }
 
+/**
+ * Method rename or moves file to different directory
+ * @param vectorOfCommands commands from command line
+ * @return 0 - file was successfully renamed or moved, 1 - wrong number of arguments, 2 - file not found, 3 - path not found
+ */
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
         saveFileSystemParameters();
     }
+    if(vectorOfCommands.size() != 3){
+        return 1;
+    }
+    int fileCluster, fileDirectoryCluster, goalCluster;
+    std::string newFileName, fileName;
+    std::vector<std::string> file = splitBySlash(vectorOfCommands[1]);
+    fileName = file[file.size() - 1];
+    if(vectorOfCommands[1][0] == '/'){
+        fileCluster = absolutePathClusterNumber(file, FILE_TYPE);
+        file.pop_back();
+        fileDirectoryCluster = absolutePathClusterNumber(file, DIRECTORY);
+    }else{
+        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+    }
+    if(fileCluster == -1){
+        return 2;
+    }
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[2]);
+    newFileName = path[path.size() - 1];
+    path.pop_back();
+    if(vectorOfCommands[2][0] == '/'){
+        goalCluster = absolutePathClusterNumber(path, DIRECTORY);
+    }else{
+        goalCluster = getDirectoryCluster(vectorOfCommands[2], mActualCluster);
+    }
+    if(goalCluster == -1){
+        return 3;
+    }
+    //getting filesize
+    int fileSize = getFileSize(fileName, fileDirectoryCluster);
+    writeFileToTheCluster(goalCluster, newFileName, false, fileSize, fileCluster);
+    deleteFileFromDirectory(fileDirectoryCluster, fileName);
+
     return 0;
 }
 
@@ -306,8 +344,9 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
         return 1;
     }
     int directoryCluster, parentCluster;
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
     if(vectorOfCommands[1][0] == '/'){
-        directoryCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
+        directoryCluster = absolutePathClusterNumber(path, DIRECTORY);
     }else{
         directoryCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
     }
@@ -320,7 +359,7 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
         parentCluster = getParentCluster(directoryCluster);
         clearCluster(directoryCluster);
         rewriteTableCell(directoryCluster, FREE_BLOCK);
-        deleteFileFromDirectory(parentCluster, vectorOfCommands[1]);
+        deleteFileFromDirectory(parentCluster, path[path.size() - 1]);
     }
     return 0;
 }
@@ -420,7 +459,7 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
  * @param vectorOfCommands commands form command line
  * @return string with path of the actual directory, -1 of there are more parameters
  */
-std::string Commands::pwd(std::vector<std::string> vectorOfCommands) {
+std::string Commands::pwd(const std::vector<std::string>& vectorOfCommands) {
     std::string path;
     if(mActualCluster == -1){
         saveFileSystemParameters();
@@ -1178,4 +1217,41 @@ void Commands::deleteFileFromDirectory(int cluster, std::string fileName){
         }
         name = "";
     }
+}
+
+/**
+ * Method
+ * @param fileName
+ * @param cluster
+ * @return
+ */
+std::string Commands::getFileData(std::string fileName, int cluster){
+    char data[mLengthOfFile];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    int i = 1;
+    std::string nameOfTheFile;
+
+    do{
+        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
+        fileSystem.read(data, mLengthOfFile);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            fileSystem.close();
+            std::string fileData;
+            for(j = 0; j < mLengthOfFile; j++){
+                fileData += data[j];
+            }
+            return fileData;
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return "";
 }

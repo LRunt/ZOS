@@ -68,7 +68,16 @@ int Parser::loadCommand(const std::string &command) {
             }
             return 1;
         case 2: //mv
-            mCmd->mv(myVector);
+            commandReturnValue = mCmd->mv(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cout << "FILE NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 3){
+                std::cout << "PATH NOT FOUND" << std::endl;
+            }
             return 2;
         case 3: //rm
             commandReturnValue = mCmd->rm(myVector);
@@ -87,9 +96,9 @@ int Parser::loadCommand(const std::string &command) {
             }else if(commandReturnValue == 1){
                 std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "PATH NOT FOUND" << std::endl;
-            }else{
                 std::cout << "EXIST" << std::endl;
+            }else{
+                std::cout << "PATH NOT FOUND" << std::endl;
             }
             return 4;
         case 5: //rmdir

@@ -39,7 +39,7 @@ class Commands {
 
         int cd(std::vector<std::string> vectorOfCommands);
 
-        std::string pwd(std::vector<std::string> vectorOfCommands);
+        std::string pwd(const std::vector<std::string>& vectorOfCommands);
 
         int info(std::vector<std::string> vectorOfCommands);
 
@@ -97,6 +97,8 @@ class Commands {
     void clearCluster(int cluster);
 
     void deleteFileFromDirectory(int cluster, std::string fileName);
+
+    std::string getFileData(std::string fileName, int cluster);
 };
 
 
