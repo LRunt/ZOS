@@ -6,6 +6,7 @@
 
 const int LAST_BLOCK = -1;
 const int FREE_BLOCK = -2;
+const int USED = -3;
 const int NAME_OF_FILE_LENGTH = 11;
 const int EMPTY_FILE_SIZE = 0;
 const int BOTH = 0;
@@ -210,21 +211,36 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     std::string data;
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
-    int clusterOfData = getFreeCluster();
+    int clusterOfData = getFreeCluster(), oldCluster;
     writeFileToTheCluster(toCluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
     while(fileSize > mClusterSize){
         data = readDataFromCluster(fromCluster, mClusterSize);
-        //vypsání dat do dalšího clusteru
-        //zapsání do tabulky
+        std::cout << data << std::endl;
+        fileSystem.seekp(mClusterSize * clusterOfData);
+        rewriteTableCell(clusterOfData, USED);
+        for(char i : data){
+            fileSystem.put(i);
+        }
+        oldCluster = clusterOfData;
+        clusterOfData = getFreeCluster();
+        rewriteTableCell(oldCluster, clusterOfData);
         fileSize -= mClusterSize;
         fromCluster = getNumberFromFat(fromCluster);
-        clusterOfData = getFreeCluster();
         if(fromCluster == -1){
             return 5;
         }
     }
-    data = readDataFromCluster(fromCluster, fileSize);
+    fileSystem.seekp(mClusterSize * clusterOfData);
 
+    data = readDataFromCluster(fromCluster, fileSize);
+    std::cout << data << std::endl;
+    for(int i = 0; i < fileSize; i++){
+        fileSystem.put(data[i]);
+    }
+    rewriteTableCell(clusterOfData, LAST_BLOCK);
+    std::cout << fromCluster << std::endl;
+
+    fileSystem.close();
     return 0;
 }
 
@@ -1217,41 +1233,4 @@ void Commands::deleteFileFromDirectory(int cluster, std::string fileName){
         }
         name = "";
     }
-}
-
-/**
- * Method
- * @param fileName
- * @param cluster
- * @return
- */
-std::string Commands::getFileData(std::string fileName, int cluster){
-    char data[mLengthOfFile];
-    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-    int i = 1;
-    std::string nameOfTheFile;
-
-    do{
-        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
-        fileSystem.read(data, mLengthOfFile);
-        nameOfTheFile = "";
-        int j = 0;
-        while(data[j] != 0x00){
-            nameOfTheFile += data[j];
-            j++;
-        }
-        if(nameOfTheFile == fileName){
-            fileSystem.close();
-            std::string fileData;
-            for(j = 0; j < mLengthOfFile; j++){
-                fileData += data[j];
-            }
-            return fileData;
-        }
-        i++;
-    }while(!nameOfTheFile.empty());
-
-    fileSystem.close();
-
-    return "";
 }
