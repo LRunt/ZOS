@@ -184,20 +184,25 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     }
 
     int fromCluster, toCluster, fileSize;
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
     if(vectorOfCommands[1][0] == '/'){
-        fromCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
-        fileSize = getFileSizeAbsolute(splitBySlash(vectorOfCommands[1]));
+        fromCluster = absolutePathClusterNumber(path, FILE_TYPE);
+        fileSize = getFileSizeAbsolute(path);
     }else{
-        fromCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
-        fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
+        std::string fileName = path[path.size() - 1];
+        fromCluster = relativePathClusterNumber(path, FILE_TYPE);
+        fileSize = getFileSize(fileName, mActualCluster);
     }
     if(fromCluster == -1){
         return 2;
     }
+    std::vector<std::string> directoryPath = splitBySlash(vectorOfCommands[2]);
+    std::string copyFileName = directoryPath[directoryPath.size() - 1];
+    directoryPath.pop_back();
     if(vectorOfCommands[2][0] == '/'){
-        toCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]), DIRECTORY);
+        toCluster = absolutePathClusterNumber(directoryPath, DIRECTORY);
     }else{
-        toCluster = getDirectoryCluster(vectorOfCommands[2], mActualCluster);
+        toCluster = relativePathClusterNumber(directoryPath, DIRECTORY);
     }
     std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
     if(toCluster == -1){
@@ -212,10 +217,9 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster(), oldCluster;
-    writeFileToTheCluster(toCluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
+    writeFileToTheCluster(toCluster, copyFileName, false, fileSize, clusterOfData);
     while(fileSize > mClusterSize){
         data = readDataFromCluster(fromCluster, mClusterSize);
-        std::cout << data << std::endl;
         fileSystem.seekp(mClusterSize * clusterOfData);
         rewriteTableCell(clusterOfData, USED);
         for(char i : data){
@@ -233,12 +237,10 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     fileSystem.seekp(mClusterSize * clusterOfData);
 
     data = readDataFromCluster(fromCluster, fileSize);
-    std::cout << data << std::endl;
     for(int i = 0; i < fileSize; i++){
         fileSystem.put(data[i]);
     }
     rewriteTableCell(clusterOfData, LAST_BLOCK);
-    std::cout << fromCluster << std::endl;
 
     fileSystem.close();
     return 0;
