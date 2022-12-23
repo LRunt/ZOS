@@ -64,7 +64,7 @@ class Commands {
 
         bool rewriteTableCell(int cluster, int tableNumber);
 
-        void writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int size, int directoryCluster);
+        void writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster);
 
         int getFreeCluster();
 
@@ -77,6 +77,8 @@ class Commands {
         int getParentCluster(int cluster);
 
         std::string getDirectoryName(int cluster);
+
+        int relativePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type);
 
         int absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type);
 

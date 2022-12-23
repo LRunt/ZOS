@@ -729,7 +729,7 @@ bool Commands::rewriteTableCell(int cluster, int tableNumber){
  * @param size the size of the file
  * @param directoryCluster the cluster where is the directory stored
  */
-void Commands::writeFileToTheCluster(int cluster, std::string fileName, bool isDirectory, int size, int directoryCluster){
+void Commands::writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster){
     char data[1];
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
@@ -1021,12 +1021,48 @@ std::string Commands::getDirectoryName(int cluster){
 }
 
 /**
+ * Method returns a number of cluster from relative path
+ * @param vectorOfFiles parsed directories
+ * @param type 0 - both (file and directory), 1 - directory, 2 - file
+ * @return -1 file not exist or number of a cluster
+ */
+int Commands::relativePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
+    int cluster = mActualCluster;
+    for(int i = 0; i < vectorOfFiles.size() - 1; i++){
+        cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }
+    if(type == BOTH){
+        cluster = getCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }else if(type == DIRECTORY){
+        cluster = getDirectoryCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }else{
+        cluster = getFileCluster(vectorOfFiles[vectorOfFiles.size()-1], cluster);
+        if(cluster == -1){
+            return -1;
+        }
+    }
+    return cluster;
+}
+
+/**
  * Method returns a number of cluster from absolute path
  * @param vectorOfFiles parsed directories
  * @param type 0 - both (file and directory), 1 - directory, 2- file
  * @return -1 file not exist or number of a cluster
  */
 int Commands::absolutePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
+    if(vectorOfFiles.empty()){
+        return mStartClusterOfData;
+    }
     int cluster = mStartClusterOfData;
     for(int i = 0; i < vectorOfFiles.size() - 1; i++){
         cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
