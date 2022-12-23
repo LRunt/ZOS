@@ -531,7 +531,7 @@ int Commands::info(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands[1][0] == '/'){
         cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), BOTH);
     }else{
-        cluster = getCluster(vectorOfCommands[1], mActualCluster);
+        cluster = relativePathClusterNumber(splitBySlash(vectorOfCommands[1]), BOTH);
     }
     if(cluster == -1){
         return 2;
