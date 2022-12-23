@@ -267,7 +267,9 @@ int Commands::mv(std::vector<std::string> vectorOfCommands) {
         file.pop_back();
         fileDirectoryCluster = absolutePathClusterNumber(file, DIRECTORY);
     }else{
-        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
+        fileCluster = relativePathClusterNumber(file, FILE_TYPE);
+        file.pop_back();
+        fileDirectoryCluster = relativePathClusterNumber(file, DIRECTORY);
     }
     if(fileCluster == -1){
         return 2;
@@ -278,7 +280,7 @@ int Commands::mv(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands[2][0] == '/'){
         goalCluster = absolutePathClusterNumber(path, DIRECTORY);
     }else{
-        goalCluster = getDirectoryCluster(vectorOfCommands[2], mActualCluster);
+        goalCluster = relativePathClusterNumber(path, DIRECTORY);
     }
     if(goalCluster == -1){
         return 3;
