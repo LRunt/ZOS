@@ -369,7 +369,7 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands[1][0] == '/'){
         directoryCluster = absolutePathClusterNumber(path, DIRECTORY);
     }else{
-        directoryCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+        directoryCluster = relativePathClusterNumber(path, DIRECTORY);
     }
     if(directoryCluster == -1){
         return 2;
@@ -466,10 +466,14 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
         return 1;
     }
     int fileCluster;
-    if(vectorOfCommands[1][0] == '/'){
+    if(vectorOfCommands[1] == "."){
+        fileCluster = getParentCluster(mActualCluster);
+    }else if(vectorOfCommands[1] == ".."){
+        fileCluster = mStartClusterOfData;
+    }else if(vectorOfCommands[1][0] == '/'){
         fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
     }else{
-        fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+        fileCluster = relativePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
     }
     if(fileCluster != -1){
         mActualCluster = fileCluster;
