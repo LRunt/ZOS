@@ -313,8 +313,9 @@ int Commands::rm(std::vector<std::string> vectorOfCommands) {
         path.pop_back();
         parentCluster = absolutePathClusterNumber(path, DIRECTORY);
     }else{
-        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
-        parentCluster = mActualCluster;
+        fileCluster = relativePathClusterNumber(path, FILE_TYPE);
+        path.pop_back();
+        parentCluster = relativePathClusterNumber(path, DIRECTORY);
     }
     if(fileCluster == -1 || parentCluster == -1){
         return 2;
