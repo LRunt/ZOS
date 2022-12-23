@@ -396,7 +396,7 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
         if(vectorOfCommands[1][0] == '/'){
             fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
         }else{
-            fileCluster = getDirectoryCluster(vectorOfCommands[1], mActualCluster);
+            fileCluster = relativePathClusterNumber(splitBySlash(vectorOfCommands[1]), DIRECTORY);
         }
         if(fileCluster == -1){
             std::cout << "PATH NOT FOUND" << std::endl;
@@ -421,15 +421,19 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-    int fileCluster, fileSize;
+    int fileCluster, fileSize, directoryCluster;
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
     if(vectorOfCommands[1][0] == '/'){
-        fileCluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[1]), FILE_TYPE);
-        fileSize = getFileSizeAbsolute(splitBySlash(vectorOfCommands[1]));
+        fileCluster = absolutePathClusterNumber(path, FILE_TYPE);
+        fileSize = getFileSizeAbsolute(path);
     }else{
-        fileCluster = getFileCluster(vectorOfCommands[1], mActualCluster);
-        fileSize = getFileSize(vectorOfCommands[1], mActualCluster);
+        fileCluster = relativePathClusterNumber(path, FILE_TYPE);
+        std::string fileName = path[path.size() - 1];
+        path.pop_back();
+        directoryCluster = relativePathClusterNumber(path, DIRECTORY);
+        fileSize = getFileSize(fileName, directoryCluster);
     }
-    if(fileCluster == -1){
+    if(fileCluster == -1 || fileSize == -1){
         return 2;
     }
     while(fileSize > mClusterSize){
@@ -1139,7 +1143,7 @@ std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
  * Method returns file size
  * @param fileName name of the file
  * @param cluster cluster where we search
- * @return file size in bites
+ * @return file size in bites or -1 of it not found
  */
 int Commands::getFileSize(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
