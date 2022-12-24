@@ -342,12 +342,25 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     }
     if(vectorOfCommands.size() != 2){
         return 1;
-    }else if(fileExist(deleteSlash(vectorOfCommands[1]))){
+    }
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
+    std::string directoryName = path[path.size() - 1];
+    int directoryCluster;
+    path.pop_back();
+    if(vectorOfCommands[1][0] == '/'){
+        directoryCluster = absolutePathClusterNumber(path, DIRECTORY);
+    }else{
+        directoryCluster = relativePathClusterNumber(path, DIRECTORY);
+    }
+    if(directoryCluster == -1){
         return 2;
     }
+    if(fileExist(deleteSlash(vectorOfCommands[1]))){
+        return 3;
+    }
     int fileCluster = getFreeCluster();
-    writeFileToTheCluster(mActualCluster, deleteSlash(vectorOfCommands[1]), true, EMPTY_FILE_SIZE, fileCluster);
-    writeFileToTheCluster(fileCluster, deleteSlash(vectorOfCommands[1]), true, EMPTY_FILE_SIZE, mActualCluster);
+    writeFileToTheCluster(directoryCluster, directoryName, true, EMPTY_FILE_SIZE, fileCluster);
+    writeFileToTheCluster(fileCluster, directoryName, true, EMPTY_FILE_SIZE, directoryCluster);
     rewriteTableCell(fileCluster, LAST_BLOCK);
     return 0;
 }
@@ -571,7 +584,10 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     }
     //testing if file fits into the file system
     int fileSize = std::filesystem::file_size(vectorOfCommands[1]);
+    std::cout << fileSize << std::endl;
     int numberOfCluster = std::ceil(fileSize/(double)mClusterSize);
+    std::cout << numberOfCluster << std::endl;
+    std::cout << getNumberOfFreeClusters() << std::endl;
     if(numberOfCluster > getNumberOfFreeClusters()){
         return 4;
     }
@@ -626,9 +642,9 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(!file){
         return 3;
     }
-    std::string data;
     while(fileSize > mClusterSize){
-        data = readDataFromCluster(cluster, mClusterSize);
+        char data[mClusterSize];
+        readDataFromClusterChar(cluster, mClusterSize, data);
         file << data;
         fileSize -= mClusterSize;
         cluster = getNumberFromFat(cluster);
@@ -636,7 +652,8 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
             return 3;
         }
     }
-    data = readDataFromCluster(cluster, fileSize);
+    char data[fileSize];
+    readDataFromClusterChar(cluster, mClusterSize, data);
     file << data;
     file.close();
 
@@ -813,13 +830,14 @@ int Commands::getNumberOfFreeClusters(){
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
     fileSystem.seekp(mClusterSize);
 
+    std::cout << mNumberOfClusters << std::endl;
     int size = std::to_string(mNumberOfClusters).size() + 1;
     std::string input(size, ' ');
     int numberOfFreeClusters = 0;
 
     for(int i = 0; i < mNumberOfClusters; i++){
         fileSystem.read(&input[0], size);
-        if(input[0] != '-' || input[1] != '2'){
+        if(input[0] == '-' && input[1] == '2'){
             numberOfFreeClusters++;
         }
     }
@@ -1146,6 +1164,13 @@ std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
     fileSystem.read(data, numberOfCharacters);
     output += data;
     return output.substr(0, numberOfCharacters);
+}
+
+void Commands::readDataFromClusterChar(int cluster, int numberOfCharacters, char* data) {
+    std::fstream fileSystem;
+    fileSystem.open(mFileSystemName,  std::ios::in | std::ios::binary);
+    fileSystem.seekp(mClusterSize * cluster);
+    fileSystem.read(data, numberOfCharacters);
 }
 
 /**

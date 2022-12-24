@@ -96,9 +96,9 @@ int Parser::loadCommand(const std::string &command) {
             }else if(commandReturnValue == 1){
                 std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "EXIST" << std::endl;
-            }else{
                 std::cout << "PATH NOT FOUND" << std::endl;
+            }else{
+                std::cout << "EXIST" << std::endl;
             }
             return 4;
         case 5: //rmdir
