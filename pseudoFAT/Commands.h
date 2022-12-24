@@ -64,13 +64,13 @@ class Commands {
 
         bool rewriteTableCell(int cluster, int tableNumber);
 
-        void writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster);
+        int writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster);
 
         int getFreeCluster();
 
         int getNumberOfFreeClusters();
 
-        bool fileExist(const std::string& fileName);
+        bool fileExist(const std::string& fileName, int cluster);
 
         int getDirectoryCluster(const std::string& fileName, int cluster);
 

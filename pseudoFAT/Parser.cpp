@@ -97,8 +97,10 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
                 std::cout << "PATH NOT FOUND" << std::endl;
-            }else{
+            }else if(commandReturnValue == 3){
                 std::cout << "EXIST" << std::endl;
+            }else{
+                std::cout << "NOT ENOUGH SPACE" << std::endl;
             }
             return 4;
         case 5: //rmdir

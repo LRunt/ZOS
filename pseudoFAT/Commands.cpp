@@ -355,11 +355,11 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(directoryCluster == -1){
         return 2;
     }
-    if(fileExist(deleteSlash(vectorOfCommands[1]))){
+    int fileCluster = getFreeCluster();
+    int makingDir = writeFileToTheCluster(directoryCluster, directoryName, true, EMPTY_FILE_SIZE, fileCluster);
+    if(makingDir == 1){
         return 3;
     }
-    int fileCluster = getFreeCluster();
-    writeFileToTheCluster(directoryCluster, directoryName, true, EMPTY_FILE_SIZE, fileCluster);
     writeFileToTheCluster(fileCluster, directoryName, true, EMPTY_FILE_SIZE, directoryCluster);
     rewriteTableCell(fileCluster, LAST_BLOCK);
     return 0;
@@ -758,8 +758,16 @@ bool Commands::rewriteTableCell(int cluster, int tableNumber){
  * @param isDirectory if the file is directory or not
  * @param size the size of the file
  * @param directoryCluster the cluster where is the directory stored
+ * @return 0 - successfully written, 1 - file already exists, 2 - not enough space in directory
  */
-void Commands::writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster){
+int Commands::writeFileToTheCluster(int cluster, const std::string& fileName, bool isDirectory, int size, int directoryCluster){
+    std::string fileNameShorted;
+    for(int i = 0; i < fileName.size() && i < NAME_OF_FILE_LENGTH; i++){
+        fileNameShorted += fileName[i];
+    }
+    if(fileExist(fileNameShorted, cluster)){
+        return 1;
+    }
     char data[1];
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
@@ -773,10 +781,10 @@ void Commands::writeFileToTheCluster(int cluster, const std::string& fileName, b
     fileSystem.seekp(mClusterSize * cluster + (p-1) * mLengthOfFile);
 
     //filename
-    for(char i : fileName){
+    for(char i : fileNameShorted){
         fileSystem.put(i);
     }
-    for(int i = fileName.size(); i < NAME_OF_FILE_LENGTH; i++){
+    for(int i = fileNameShorted.size(); i < NAME_OF_FILE_LENGTH; i++){
         fileSystem.put(0x00);
     }
 
@@ -800,6 +808,7 @@ void Commands::writeFileToTheCluster(int cluster, const std::string& fileName, b
     }
 
     fileSystem.close();
+    return 0;
 }
 
 /**
@@ -847,9 +856,10 @@ int Commands::getNumberOfFreeClusters(){
 /**
  * Method detects whether a folder with the same name already exists
  * @param fileName name of the file
+ * @param cluster number of cluster where we search
  * @return true - folder exist, false - folder not exist
  */
-bool Commands::fileExist(const std::string& fileName){
+bool Commands::fileExist(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
     int fileInformationLength = mLengthOfFile;
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
@@ -857,7 +867,7 @@ bool Commands::fileExist(const std::string& fileName){
     std::string nameOfTheFile;
 
     do{
-        fileSystem.seekp(mClusterSize * mActualCluster + (fileInformationLength * i));
+        fileSystem.seekp(mClusterSize * cluster + (fileInformationLength * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
@@ -1058,6 +1068,9 @@ std::string Commands::getDirectoryName(int cluster){
  * @return -1 file not exist or number of a cluster
  */
 int Commands::relativePathClusterNumber(const std::vector<std::string>& vectorOfFiles, int type){
+    if(vectorOfFiles.empty()){
+        return mActualCluster;
+    }
     int cluster = mActualCluster;
     for(int i = 0; i < vectorOfFiles.size() - 1; i++){
         cluster = getDirectoryCluster(vectorOfFiles[i], cluster);
