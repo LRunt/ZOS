@@ -370,7 +370,7 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
 /**
  * Method removes directory from file system, if it is empty
  * @param vectorOfCommands commands from command line
- * @return 0 - file was removed, 1 - wrong number of parameters, 2 - file not found, 3 - file is not empty
+ * @return 0 - file was removed, 1 - wrong number of parameters, 2 - file not found, 3 - file is not empty, 4 - cannot delete dictionary, where you are
  */
 int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -391,6 +391,8 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     }
     if(!isDirectoryEmpty(directoryCluster)){
         return 3;
+    }else if(directoryCluster == mActualCluster){
+        return 4;
     }else{
         parentCluster = getParentCluster(directoryCluster);
         clearCluster(directoryCluster);

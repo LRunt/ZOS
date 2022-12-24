@@ -111,8 +111,10 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
                 std::cout << "FILE NOT FOUND" << std::endl;
-            }else{
+            }else if (commandReturnValue == 3){
                 std::cout << "NOT EMPTY" << std::endl;
+            }else{
+                std::cout << "CANNOT DELETE DIRECTORY WHERE YOU ACTUALLY ARE" << std::endl;
             }
             return 5;
         case 6: //ls
