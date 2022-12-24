@@ -334,7 +334,7 @@ int Commands::rm(std::vector<std::string> vectorOfCommands) {
 /**
  * Method make a new file if file not exist
  * @param vectorOfCommands commands from command line
- * @return 0 - File was created, 1 - wrong number of parameters, 2 - path not found, 3 - file already exist
+ * @return 0 - File was created, 1 - wrong number of parameters, 2 - path not found, 3 - file already exist, 4 - not enough space in directory
  */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -359,6 +359,8 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     int makingDir = writeFileToTheCluster(directoryCluster, directoryName, true, EMPTY_FILE_SIZE, fileCluster);
     if(makingDir == 1){
         return 3;
+    }else if(makingDir == 2){
+        return 4;
     }
     writeFileToTheCluster(fileCluster, directoryName, true, EMPTY_FILE_SIZE, directoryCluster);
     rewriteTableCell(fileCluster, LAST_BLOCK);
@@ -771,12 +773,17 @@ int Commands::writeFileToTheCluster(int cluster, const std::string& fileName, bo
     char data[1];
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
-    int p = 0;
+    int p = 0, position;
     do{
         fileSystem.seekp(mClusterSize * cluster + p * mLengthOfFile);
         fileSystem.read(data, 1);
         p++;
-    } while (*data != 0x00);
+        position = (p * mLengthOfFile) + mLengthOfFile;
+    } while (*data != 0x00 && position < mClusterSize);
+
+    if(position > mClusterSize){
+         return 2;
+    }
 
     fileSystem.seekp(mClusterSize * cluster + (p-1) * mLengthOfFile);
 
