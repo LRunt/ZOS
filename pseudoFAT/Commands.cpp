@@ -1289,7 +1289,7 @@ void Commands::clearCluster(int cluster){
  * @param cluster cluster where we will delete the file
  * @param fileName name of the file
  */
-void Commands::deleteFileFromDirectory(int cluster, std::string fileName){
+void Commands::deleteFileFromDirectory(int cluster, const std::string& fileName){
     char data[mLengthOfFile];
     std::fstream fileSystem(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int actualPosition = mLengthOfFile, i = 0, founded = 0, j;
@@ -1313,7 +1313,7 @@ void Commands::deleteFileFromDirectory(int cluster, std::string fileName){
             }
 
             //transfer other files
-            while(data[0] != 0x00){
+            while(data[0] != 0x00 && (mLengthOfFile * (i + 1)) < mClusterSize){
                 fileSystem.seekp(cluster * mClusterSize + (mLengthOfFile * (i + 1)));
                 fileSystem.read(data, mLengthOfFile);
                 fileSystem.seekp(cluster * mClusterSize + actualPosition);

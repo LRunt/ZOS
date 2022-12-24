@@ -98,7 +98,7 @@ class Commands {
 
         void clearCluster(int cluster);
 
-        void deleteFileFromDirectory(int cluster, std::string fileName);
+        void deleteFileFromDirectory(int cluster, const std::string& fileName);
 
     void readDataFromClusterChar(int cluster, int numberOfCharacters, char *data);
 };
