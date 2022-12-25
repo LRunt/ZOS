@@ -203,9 +203,7 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     if(numberOfClusters > getNumberOfFreeClusters()){
         return 4;
     }
-    std::string data;
-    std::fstream fileSystem;
-    fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
+    std::fstream fileSystem(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster(), oldCluster;
     int writing = writeFileToTheCluster(toCluster, copyFileName, false, fileSize, clusterOfData);
     if(writing == 1){
@@ -215,12 +213,16 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
         fileSystem.close();
         return 6;
     }
+    char data[1];
     while(fileSize > mClusterSize){
-        data = readDataFromCluster(fromCluster, mClusterSize);
-        fileSystem.seekp(mClusterSize * clusterOfData);
+        //data = readDataFromCluster(fromCluster, mClusterSize);
         rewriteTableCell(clusterOfData, USED);
-        for(char i : data){
-            fileSystem.put(i);
+        //writing data
+        for(int i = 0; i < mClusterSize; i++){
+            fileSystem.seekp((mClusterSize * fromCluster) + i);
+            fileSystem.read(data, 1);
+            fileSystem.seekp((mClusterSize * clusterOfData) + i);
+            fileSystem.put(*data);
         }
         oldCluster = clusterOfData;
         clusterOfData = getFreeCluster();
@@ -228,14 +230,16 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
         fileSize -= mClusterSize;
         fromCluster = getNumberFromFat(fromCluster);
         if(fromCluster == -1){
+            fileSystem.close();
             return 5;
         }
     }
-    fileSystem.seekp(mClusterSize * clusterOfData);
-
-    data = readDataFromCluster(fromCluster, fileSize);
+    //data = readDataFromCluster(fromCluster, fileSize);
     for(int i = 0; i < fileSize; i++){
-        fileSystem.put(data[i]);
+        fileSystem.seekp((mClusterSize * fromCluster) + i);
+        fileSystem.read(data, 1);
+        fileSystem.seekp((mClusterSize * clusterOfData) + i);
+        fileSystem.put(*data);
     }
     rewriteTableCell(clusterOfData, LAST_BLOCK);
 
@@ -594,9 +598,15 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
         return 2;
     }
     //path in file system exists
-    std::replace(vectorOfCommands[1].begin(), vectorOfCommands[1].end(), '\\', '/');
-    std::vector<std::string> absolutePath = splitBySlash(vectorOfCommands[1]);
-    int cluster = absolutePathClusterNumber(splitBySlash(vectorOfCommands[2]), DIRECTORY);
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[2]);
+    std::string nameOfFile = path[path.size() - 1];
+    path.pop_back();
+    int cluster;
+    if(vectorOfCommands[2][0] == '/'){
+        cluster = absolutePathClusterNumber(path, DIRECTORY);
+    }else{
+        cluster = relativePathClusterNumber(path, DIRECTORY);
+    }
     if(cluster == -1){
         return 3;
     }
@@ -611,7 +621,7 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster();
-    int write = writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
+    int write = writeFileToTheCluster(cluster, nameOfFile, false, fileSize, clusterOfData);
     if(write == 1){
         fileSystem.close();
         return 5;
@@ -1196,30 +1206,6 @@ void Commands::printAllFiles(int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
     }
     fileSystem.close();
-}
-
-/**
- * Method reads data from cluster and returns string of it
- * @param cluster cluster where is data stored
- * @param numberOfCharacters number of characters in cluster
- * @return data what was loaded
- */
-std::string Commands::readDataFromCluster(int cluster, int numberOfCharacters){
-    std::string output;
-    char data[numberOfCharacters];
-    std::fstream fileSystem;
-    fileSystem.open(mFileSystemName,  std::ios::in | std::ios::binary);
-    fileSystem.seekp(mClusterSize * cluster);
-    fileSystem.read(data, numberOfCharacters);
-    output += data;
-    return output.substr(0, numberOfCharacters);
-}
-
-void Commands::readDataFromClusterChar(int cluster, int numberOfCharacters, char* data) {
-    std::fstream fileSystem;
-    fileSystem.open(mFileSystemName,  std::ios::in | std::ios::binary);
-    fileSystem.seekp(mClusterSize * cluster);
-    fileSystem.read(data, numberOfCharacters);
 }
 
 /**

@@ -238,6 +238,7 @@ int Parser::load(std::vector<std::string> vectorOfCommands) {
         return 2;
     }else{
         while(std::getline(input, line)){
+            std::cout << line << std::endl;
             loadCommand(line);
         }
     }
