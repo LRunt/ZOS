@@ -703,10 +703,48 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
 /**
  * Method check if file system is valid or not
  * @param vectorOfCommands commands form command line
- * @return
+ * @return 0 - file system is valid, 1 - file system is invalid, 2 - wrong number of arguments
  */
 int Commands::check(std::vector<std::string> vectorOfCommands){
-
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 1){
+        return 2;
+    }
+    int clusterOfDirectory, i, j;
+    char data[std::to_string(mNumberOfClusters).size()];
+    char isDirectory[1];
+    std::vector<int> directories;
+    std::string cluster;
+    directories.push_back(mStartClusterOfData);
+    std::ifstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    while(!directories.empty()){
+        clusterOfDirectory = directories[directories.size() - 1];
+        directories.pop_back();
+        j = 1;
+        do{
+            fileSystem.seekg((clusterOfDirectory * mClusterSize) + (mLengthOfFile * j) + NAME_OF_FILE_LENGTH);
+            fileSystem.read(data, 1);
+            fileSystem.seekg((clusterOfDirectory * mClusterSize) + (mLengthOfFile * j) + NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size());
+            fileSystem.read(data, std::to_string(mNumberOfClusters).size());
+            i = 0;
+            cluster = "";
+            while(data[i] != 0x00 && i < std::to_string(mNumberOfClusters).size()){
+                cluster += data[i];
+                i++;
+            }
+            if(std::stoi(cluster) < 0 || std::stoi(cluster) > mNumberOfClusters){
+                fileSystem.close();
+                return 1;
+            }
+            if(isDirectory[0] == 0x01){
+                directories.push_back(std::stoi(cluster));
+            }
+            j++;
+        }while(data[0] != 0x00 && ((clusterOfDirectory * mClusterSize) + (mLengthOfFile * j)) < mClusterSize);
+    }
+    fileSystem.close();
     return 0;
 }
 
@@ -722,7 +760,7 @@ int Commands::bug(std::vector<std::string> vectorOfCommands){
     if(vectorOfCommands.size() != 2){
         return 1;
     }
-    int directoryCluster, fileCluster, newCluster = 0;
+    int directoryCluster, fileCluster, newCluster = -1;
     std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
     std::string nameOfFile = path[path.size() - 1];
     if(vectorOfCommands[1][0] == '/'){
@@ -736,10 +774,6 @@ int Commands::bug(std::vector<std::string> vectorOfCommands){
     }
     if(fileCluster == -1 || directoryCluster == -1){
         return 2;
-    }
-    for(int i = 0; i < std::to_string(mNumberOfClusters).size(); i++){
-        newCluster *= 10;
-        newCluster += 9;
     }
     if(!rewriteFileCluster(directoryCluster, nameOfFile, newCluster)){
         return 3;
