@@ -1039,7 +1039,7 @@ int Commands::getCluster(const std::string& fileName, int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             nameOfTheFile += data[j];
             j++;
         }
@@ -1049,7 +1049,7 @@ int Commands::getCluster(const std::string& fileName, int cluster){
             fileSystem.read(data, mTableCellSize);
             j = 0;
             nameOfTheFile = "";
-            while(data[j] != 0x00){
+            while(data[j] != 0x00 && j < mTableCellSize){
                 nameOfTheFile += data[j];
                 j++;
             }
@@ -1076,7 +1076,7 @@ int Commands::getParentCluster(int cluster){
 
     std::string parentDirectoryCluster;
     int i = 0;
-    while(data[i] != 0x00){
+    while(data[i] != 0x00 && i < std::to_string(mNumberOfClusters).size()){
         parentDirectoryCluster += data[i];
         i++;
     }
@@ -1098,7 +1098,7 @@ std::string Commands::getDirectoryName(int cluster){
 
     std::string directoryName;
     int i = 0;
-    while(data[i] != 0x00){
+    while(data[i] != 0x00 && i < NAME_OF_FILE_LENGTH){
         directoryName += data[i];
         i++;
     }
@@ -1191,7 +1191,7 @@ void Commands::printAllFiles(int cluster){
     std::string fileName;
     while(data[0] != 0x00){
         int i = 0;
-        while(data[i] != 0x00){
+        while(data[i] != 0x00 && i < NAME_OF_FILE_LENGTH){
             fileName += data[i];
             i++;
         }
@@ -1226,7 +1226,7 @@ int Commands::getFileSize(const std::string& fileName, int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             nameOfTheFile += data[j];
             j++;
         }
@@ -1235,7 +1235,7 @@ int Commands::getFileSize(const std::string& fileName, int cluster){
             fileSystem.read(data, std::to_string(mFileSize).size());
             j = 0;
             nameOfTheFile = "";
-            while(data[j] != 0x00){
+            while(data[j] != 0x00 && j < std::to_string(mFileSize).size()){
                 nameOfTheFile += data[j];
                 j++;
             }
