@@ -460,15 +460,27 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(fileCluster == -1 || fileSize == -1){
         return 2;
     }
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    char data[1];
     while(fileSize > mClusterSize){
-        std::cout << readDataFromCluster(fileCluster, mClusterSize);
+        fileSystem.seekp(mClusterSize * fileCluster);
+        for(int i = 0; i < mClusterSize; i++){
+            fileSystem.read(data, 1);
+            std::cout << *data;
+        }
         fileSize -= mClusterSize;
         fileCluster = getNumberFromFat(fileCluster);
         if(fileCluster == -1){
             return 3;
         }
     }
-    std::cout << readDataFromCluster(fileCluster, fileSize) << std::endl;
+    fileSystem.seekp(mClusterSize * fileCluster);
+    for(int i = 0; i < fileSize; i++){
+        fileSystem.read(data, 1);
+        std::cout << *data;
+    }
+    std::cout << std::endl;
+    fileSystem.close();
     return 0;
 }
 
