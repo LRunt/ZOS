@@ -60,17 +60,17 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }else if(commandReturnValue == 4){
-                std::cout << "NOT ENOUGH SPACE" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE" << std::endl;
             }else if(commandReturnValue == 5){
-                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+                std::cerr << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
             }else{
-                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 1;
         case 2: //mv
@@ -78,15 +78,15 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }else if(commandReturnValue == 4){
-                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+                std::cerr << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
             }else{
-                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 2;
         case 3: //rm
@@ -94,9 +94,9 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else{
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }
             return 3;
         case 4: //mkdir
@@ -104,13 +104,13 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "EXIST" << std::endl;
+                std::cerr << "EXIST" << std::endl;
             }else{
-                std::cout << "NOT ENOUGH SPACE" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE" << std::endl;
             }
             return 4;
         case 5: //rmdir
@@ -118,29 +118,29 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }else if (commandReturnValue == 3){
-                std::cout << "NOT EMPTY" << std::endl;
+                std::cerr << "NOT EMPTY" << std::endl;
             }else{
-                std::cout << "CANNOT DELETE DIRECTORY WHERE YOU ACTUALLY ARE" << std::endl;
+                std::cerr << "CANNOT DELETE DIRECTORY WHERE YOU ACTUALLY ARE" << std::endl;
             }
             return 5;
         case 6: //ls
             commandReturnValue = mCmd->ls(myVector);
             if(commandReturnValue){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }
             return 6;
         case 7: //cat
             commandReturnValue = mCmd->cat(myVector);
             if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if (commandReturnValue == 2){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "DATA ERROR" << std::endl;
+                std::cerr << "DATA ERROR" << std::endl;
             }
             return 7;
         case 8: //cd
@@ -148,9 +148,9 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else{
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }
             return 8;
         case 9: //pwd
@@ -159,9 +159,9 @@ int Parser::loadCommand(const std::string &command) {
         case 10: //info
             commandReturnValue = mCmd->info(myVector);
             if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }
             return 10;
         case 11: //incp
@@ -169,17 +169,17 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }else if(commandReturnValue == 4){
-                std::cout << "NOT ENOUGH SPACE" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE" << std::endl;
             }else if(commandReturnValue == 5){
-                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+                std::cerr << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
             }else{
-                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
+                std::cerr << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 11;
         case 12: //outcp
@@ -187,11 +187,11 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
-                std::cout << "PATH NOT FOUND" << std::endl;
+                std::cerr << "PATH NOT FOUND" << std::endl;
             }
             return 12;
         case 13: //load
@@ -199,16 +199,16 @@ int Parser::loadCommand(const std::string &command) {
             if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
-                std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else {
-                std::cout << "FILE NOT FOUND" << std::endl;
+                std::cerr << "FILE NOT FOUND" << std::endl;
             }
             return 13;
         case 14: //format
             if(mCmd->format(myVector)){
                 std::cout << "OK" << std::endl;
             }else{
-                std::cout << "CANNOT CREATE FILE" << std::endl;
+                std::cerr << "CANNOT CREATE FILE" << std::endl;
             }
             return 14;
         case 15: //check
@@ -217,7 +217,7 @@ int Parser::loadCommand(const std::string &command) {
         case 16: //bug
             return 16;
         default:
-            std::cout << command << ": COMMAND NOT FOUND" << std::endl;
+            std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             return -1;
     }
 }
