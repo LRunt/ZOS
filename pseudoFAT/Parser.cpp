@@ -19,7 +19,9 @@ std::map<std::string, int> commandMap = {
         {"incp", 11},
         {"outcp", 12},
         {"load", 13},
-        {"format", 14}
+        {"format", 14},
+        {"check", 15},
+        {"bug", 16}
 };
 
 int getCommandType(const std::string& command){
@@ -63,8 +65,12 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
                 std::cout << "PATH NOT FOUND" << std::endl;
-            }else{
+            }else if(commandReturnValue == 4){
                 std::cout << "NOT ENOUGH SPACE" << std::endl;
+            }else if(commandReturnValue == 5){
+                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+            }else{
+                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 1;
         case 2: //mv
@@ -77,6 +83,10 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
                 std::cout << "PATH NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 4){
+                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+            }else{
+                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 2;
         case 3: //rm
@@ -164,8 +174,12 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "FILE NOT FOUND" << std::endl;
             }else if(commandReturnValue == 3){
                 std::cout << "PATH NOT FOUND" << std::endl;
-            }else{
+            }else if(commandReturnValue == 4){
                 std::cout << "NOT ENOUGH SPACE" << std::endl;
+            }else if(commandReturnValue == 5){
+                std::cout << "FILE WITH SAME NAME EXIST IN DIRECTORY" << std::endl;
+            }else{
+                std::cout << "NOT ENOUGH SPACE IN DIRECTORY" << std::endl;
             }
             return 11;
         case 12: //outcp
@@ -197,6 +211,11 @@ int Parser::loadCommand(const std::string &command) {
                 std::cout << "CANNOT CREATE FILE" << std::endl;
             }
             return 14;
+        case 15: //check
+
+            return 15;
+        case 16: //bug
+            return 16;
         default:
             std::cout << command << ": COMMAND NOT FOUND" << std::endl;
             return -1;

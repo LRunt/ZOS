@@ -51,16 +51,6 @@ std::vector<std::string> splitBySlash(const std::string& absolutePath){
 }
 
 /**
- * Method deletes slashes from string and return vector of strings
- * @param fileName path of the file
- * @return vector of the dictionaries and files
- */
-std::string deleteSlash(std::string fileName){
-    fileName.erase(remove(fileName.begin(), fileName.end(), '/'), fileName.end());
-    return fileName;
-}
-
-/**
  * Method to get size of the fileSystem
  * @param input size of the file system - format <number><units>, allowed units are B, kB, MB
  * @return size of the fileSystem
@@ -173,7 +163,7 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
 /**
  * Method copy a file to another directory in pseudoFAT system
  * @param vectorOfCommands commands from command line
- * @return 0 - if copy was successful, 1 - wrong number of arguments, 2 - file not found, 3 - path not found, 4 - there is not enough space
+ * @return 0 - if copy was successful, 1 - wrong number of arguments, 2 - file not found, 3 - path not found, 4 - there is not enough space, 5 - exist file with same name, 6 - not enough space in directory cluster
  */
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -217,7 +207,14 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster(), oldCluster;
-    writeFileToTheCluster(toCluster, copyFileName, false, fileSize, clusterOfData);
+    int writing = writeFileToTheCluster(toCluster, copyFileName, false, fileSize, clusterOfData);
+    if(writing == 1){
+        fileSystem.close();
+        return 5;
+    }else if(writing == 2){
+        fileSystem.close();
+        return 6;
+    }
     while(fileSize > mClusterSize){
         data = readDataFromCluster(fromCluster, mClusterSize);
         fileSystem.seekp(mClusterSize * clusterOfData);
@@ -249,7 +246,7 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
 /**
  * Method rename or moves file to different directory
  * @param vectorOfCommands commands from command line
- * @return 0 - file was successfully renamed or moved, 1 - wrong number of arguments, 2 - file not found, 3 - path not found
+ * @return 0 - file was successfully renamed or moved, 1 - wrong number of arguments, 2 - file not found, 3 - path not found, 4 - exist file with same name, 5 - not enough space in directory cluster
  */
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -287,7 +284,12 @@ int Commands::mv(std::vector<std::string> vectorOfCommands) {
     }
     //getting filesize
     int fileSize = getFileSize(fileName, fileDirectoryCluster);
-    writeFileToTheCluster(goalCluster, newFileName, false, fileSize, fileCluster);
+    int write = writeFileToTheCluster(goalCluster, newFileName, false, fileSize, fileCluster);
+    if(write == 1){
+        return 4;
+    }else if(write == 2){
+        return 5;
+    }
     deleteFileFromDirectory(fileDirectoryCluster, fileName);
 
     return 0;
@@ -527,7 +529,7 @@ std::string Commands::pwd(const std::vector<std::string>& vectorOfCommands) {
         path += file + '/';
     }
 
-    return path.substr(0, path.length()-1);
+    return path.substr(0, path.length() - 1);
 }
 
 /**
@@ -565,7 +567,7 @@ int Commands::info(std::vector<std::string> vectorOfCommands) {
 /**
  * Method loads file from hard drive and copy it to the fileSystem
  * @param vectorOfCommands commands form command line
- * @return 0 - successfully copied, 1 - wrong number of parameters, 2 - file on hard drive not found, 3 - path in file system not found, 4 - not enough space
+ * @return 0 - successfully copied, 1 - wrong number of parameters, 2 - file on hard drive not found, 3 - path in file system not found, 4 - not enough space, 5 - exist file with same name, 6 - not enough space in directory cluster
  */
 int Commands::incp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
@@ -600,7 +602,14 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
     std::fstream fileSystem;
     fileSystem.open(mFileSystemName, std::ios::out | std::ios::in | std::ios::binary);
     int clusterOfData = getFreeCluster();
-    writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
+    int write = writeFileToTheCluster(cluster, absolutePath[absolutePath.size() - 1], false, fileSize, clusterOfData);
+    if(write == 1){
+        fileSystem.close();
+        return 5;
+    }else if(write == 2){
+        fileSystem.close();
+        return 6;
+    }
     rewriteTableCell(clusterOfData, LAST_BLOCK);
     fileSystem.seekp(mClusterSize * clusterOfData);
     for(int i = 0; i < fileSize; i++){
@@ -880,7 +889,7 @@ bool Commands::fileExist(const std::string& fileName, int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             nameOfTheFile += data[j];
             j++;
         }
@@ -912,7 +921,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             nameOfTheFile += data[j];
             j++;
         }
@@ -923,7 +932,8 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
                 fileSystem.read(data, mTableCellSize);
                 j = 0;
                 nameOfTheFile = "";
-                while(data[j] != 0x00){
+                //getting number of cluster
+                while(data[j] != 0x00 && j < std::to_string(mNumberOfClusters).size()){
                     nameOfTheFile += data[j];
                     j++;
                 }
@@ -957,7 +967,7 @@ int Commands::getFileCluster(const std::string& fileName, int cluster){
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
         nameOfTheFile = "";
         int j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             nameOfTheFile += data[j];
             j++;
         }
@@ -968,7 +978,8 @@ int Commands::getFileCluster(const std::string& fileName, int cluster){
                 fileSystem.read(data, mTableCellSize);
                 j = 0;
                 nameOfTheFile = "";
-                while(data[j] != 0x00){
+                //getting number of cluster
+                while(data[j] != 0x00 && j < std::to_string(mNumberOfClusters).size()){
                     nameOfTheFile += data[j];
                     j++;
                 }
@@ -1302,7 +1313,7 @@ void Commands::deleteFileFromDirectory(int cluster, const std::string& fileName)
         i++;
         actualPosition = mLengthOfFile * i;
         j = 0;
-        while(data[j] != 0x00){
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
             name += data[j];
             j++;
         }
