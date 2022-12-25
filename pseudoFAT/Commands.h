@@ -49,6 +49,10 @@ class Commands {
 
         void saveFileSystemParameters();
 
+        int check(std::vector<std::string> vectorOfCommands);
+
+        int bug(std::vector<std::string> vectorOfCommands);
+
     private:
         char* mFileSystemName;
         int mClusterSize = 1024;
@@ -97,6 +101,8 @@ class Commands {
         void clearCluster(int cluster);
 
         void deleteFileFromDirectory(int cluster, const std::string& fileName);
+
+    bool rewriteFileCluster(int cluster, const std::string& fileName, int newFileCluster);
 };
 
 

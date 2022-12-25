@@ -212,9 +212,24 @@ int Parser::loadCommand(const std::string &command) {
             }
             return 14;
         case 15: //check
-
+            commandReturnValue = mCmd->check(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else if(commandReturnValue == 1){
+                std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
+            }else if(commandReturnValue == 2){
+                std::cerr << "FILE NOT FOUND" << std::endl;
+            }else{
+                std::cerr << "BUG FAILED" << std::endl;
+            }
             return 15;
         case 16: //bug
+            commandReturnValue = mCmd->bug(myVector);
+            if(commandReturnValue == 0){
+                std::cout << "OK" << std::endl;
+            }else{
+                std::cout << "ERROR" << std::endl;
+            }
             return 16;
         default:
             std::cerr << command << ": COMMAND NOT FOUND" << std::endl;

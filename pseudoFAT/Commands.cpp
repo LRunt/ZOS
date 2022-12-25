@@ -701,6 +701,53 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
 }
 
 /**
+ * Method check if file system is valid or not
+ * @param vectorOfCommands commands form command line
+ * @return
+ */
+int Commands::check(std::vector<std::string> vectorOfCommands){
+
+    return 0;
+}
+
+/**
+ * Method sets file cluster out of fileSystem range
+ * @param vectorOfCommands commands form command line
+ * @return 0 - file system was successfully bugged, 1 - wrong number of arguments, 2 - file not exists, 3 - bugging failed
+ */
+int Commands::bug(std::vector<std::string> vectorOfCommands){
+    if(mActualCluster == -1){
+        saveFileSystemParameters();
+    }
+    if(vectorOfCommands.size() != 2){
+        return 1;
+    }
+    int directoryCluster, fileCluster, newCluster = 0;
+    std::vector<std::string> path = splitBySlash(vectorOfCommands[1]);
+    std::string nameOfFile = path[path.size() - 1];
+    if(vectorOfCommands[1][0] == '/'){
+        fileCluster = absolutePathClusterNumber(path, FILE_TYPE);
+        path.pop_back();
+        directoryCluster = absolutePathClusterNumber(path, DIRECTORY);
+    }else{
+        fileCluster = absolutePathClusterNumber(path, FILE_TYPE);
+        path.pop_back();
+        directoryCluster = relativePathClusterNumber(path, DIRECTORY);
+    }
+    if(fileCluster == -1 || directoryCluster == -1){
+        return 2;
+    }
+    for(int i = 0; i < std::to_string(mNumberOfClusters).size(); i++){
+        newCluster *= 10;
+        newCluster += 9;
+    }
+    if(!rewriteFileCluster(directoryCluster, nameOfFile, newCluster)){
+        return 3;
+    }
+    return 0;
+}
+
+/**
  * Method initialize data of the file system
  */
 void Commands::saveFileSystemParameters() {
@@ -963,6 +1010,7 @@ int Commands::getDirectoryCluster(const std::string& fileName, int cluster){
                     nameOfTheFile += data[j];
                     j++;
                 }
+                fileSystem.close();
                 return std::stoi(nameOfTheFile);
             }else{
                 fileSystem.close();
@@ -1009,6 +1057,7 @@ int Commands::getFileCluster(const std::string& fileName, int cluster){
                     nameOfTheFile += data[j];
                     j++;
                 }
+                fileSystem.close();
                 return std::stoi(nameOfTheFile);
             }else{
                 fileSystem.close();
@@ -1053,6 +1102,7 @@ int Commands::getCluster(const std::string& fileName, int cluster){
                 nameOfTheFile += data[j];
                 j++;
             }
+            fileSystem.close();
             return std::stoi(nameOfTheFile);
         }
         i++;
@@ -1217,10 +1267,8 @@ void Commands::printAllFiles(int cluster){
 int Commands::getFileSize(const std::string& fileName, int cluster){
     char data[NAME_OF_FILE_LENGTH];
     std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
-
     int i = 1;
     std::string nameOfTheFile;
-
     do{
         fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
         fileSystem.read(data, NAME_OF_FILE_LENGTH);
@@ -1239,6 +1287,7 @@ int Commands::getFileSize(const std::string& fileName, int cluster){
                 nameOfTheFile += data[j];
                 j++;
             }
+            fileSystem.close();
             return std::stoi(nameOfTheFile);
         }
         i++;
@@ -1342,4 +1391,45 @@ void Commands::deleteFileFromDirectory(int cluster, const std::string& fileName)
         }
         name = "";
     }
+}
+
+/**
+ * Method rewrites start cluster of the file data
+ * @param cluster cluster where is information about file stored
+ * @param fileName name of the file which cluster will be changed
+ * @param newFileCluster new cluster of the file
+ * @return true - successfully changed, false - changing of the cluster failed
+ */
+bool Commands::rewriteFileCluster(int cluster, const std::string& fileName, int newFileCluster){
+    char data[NAME_OF_FILE_LENGTH];
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    int i = 1;
+    std::string nameOfTheFile;
+    do{
+        fileSystem.seekp(mClusterSize * cluster + (mLengthOfFile * i));
+        fileSystem.read(data, NAME_OF_FILE_LENGTH);
+        nameOfTheFile = "";
+        int j = 0;
+        while(data[j] != 0x00 && j < NAME_OF_FILE_LENGTH){
+            nameOfTheFile += data[j];
+            j++;
+        }
+        if(nameOfTheFile == fileName){
+            fileSystem.read(data, 1);
+            fileSystem.read(data, std::to_string(mFileSize).size());
+            for(int k = 0; k < std::to_string(newFileCluster).size(); k++){
+                fileSystem.put(std::to_string(newFileCluster)[k]);
+            }
+            for(int k = 0; k < std::to_string(mNumberOfClusters).size() - std::to_string(newFileCluster).size(); k++){
+                fileSystem.put(0x00);
+            }
+            fileSystem.close();
+            return true;
+        }
+        i++;
+    }while(!nameOfTheFile.empty());
+
+    fileSystem.close();
+
+    return false;
 }
