@@ -1,6 +1,9 @@
-//
-// Created by Lenovo on 12.11.2022.
-//
+/**
+ * Class execute the commands of the file system
+ * Created by Lenovo on 12.11.2022.
+ */
+
+
 
 #include "Commands.h"
 
@@ -725,7 +728,7 @@ int Commands::check(std::vector<std::string> vectorOfCommands){
         j = 1;
         do{
             fileSystem.seekg((clusterOfDirectory * mClusterSize) + (mLengthOfFile * j) + NAME_OF_FILE_LENGTH);
-            fileSystem.read(data, 1);
+            fileSystem.read(isDirectory, 1);
             fileSystem.seekg((clusterOfDirectory * mClusterSize) + (mLengthOfFile * j) + NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size());
             fileSystem.read(data, std::to_string(mNumberOfClusters).size());
             i = 0;
@@ -734,9 +737,11 @@ int Commands::check(std::vector<std::string> vectorOfCommands){
                 cluster += data[i];
                 i++;
             }
-            if(std::stoi(cluster) < 0 || std::stoi(cluster) > mNumberOfClusters){
-                fileSystem.close();
-                return 1;
+            if(!cluster.empty()){
+                if(std::stoi(cluster) < 0 || std::stoi(cluster) > mNumberOfClusters){
+                    fileSystem.close();
+                    return 1;
+                }
             }
             if(isDirectory[0] == 0x01){
                 directories.push_back(std::stoi(cluster));
@@ -1436,7 +1441,7 @@ void Commands::deleteFileFromDirectory(int cluster, const std::string& fileName)
  */
 bool Commands::rewriteFileCluster(int cluster, const std::string& fileName, int newFileCluster){
     char data[NAME_OF_FILE_LENGTH];
-    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    std::fstream fileSystem(mFileSystemName, std::ios::in | std::ios::out | std::ios::binary);
     int i = 1;
     std::string nameOfTheFile;
     do{

@@ -1,9 +1,13 @@
-//
-// Created by Lenovo on 11.11.2022.
-//
+/**
+ * Class parsing commands entered by user
+ * Created by Lukas Runt on 11.11.2022.
+ */
 
 #include "Parser.h"
 
+/**
+ * Map with commands
+ */
 std::map<std::string, int> commandMap = {
         {"quit", 0},
         {"cp", 1},
@@ -24,6 +28,11 @@ std::map<std::string, int> commandMap = {
         {"bug", 16}
 };
 
+/**
+ * Method returns which command was entered
+ * @param command command form command line
+ * @return number of command
+ */
 int getCommandType(const std::string& command){
     auto it = commandMap.find(command);
     if(it != commandMap.end()){
@@ -33,6 +42,11 @@ int getCommandType(const std::string& command){
     }
 }
 
+/**
+ * Method parsing command, it split the command with white space
+ * @param command command from command line
+ * @return vector of arguments
+ */
 std::vector<std::string> Parser::parseCommand(const std::string &command) {
 
     std::istringstream iss(command);
@@ -46,6 +60,11 @@ std::vector<std::string> Parser::parseCommand(const std::string &command) {
     return tokens;
 }
 
+/**
+ * Method loads, runs and evaluate the commands
+ * @param command command from command line
+ * @return number of command
+ */
 int Parser::loadCommand(const std::string &command) {
     if(!command.length()){
         return -1;

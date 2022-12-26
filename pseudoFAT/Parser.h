@@ -1,6 +1,8 @@
-//
-// Created by Lukas Runt on 11.11.2022.
-//
+/**
+ * Class parsing commands entered by user
+ * Created by Lukas Runt on 11.11.2022.
+ */
+
 
 #pragma once
 

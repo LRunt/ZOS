@@ -1,3 +1,8 @@
+/**
+ * The main class of pseudoFAT system
+ * Created by Lukas Runt on 11.11.2022.
+ */
+
 #include <iostream>
 
 #include "Parser.h"
@@ -14,8 +19,6 @@ int main(int argc, char** argv) {
 
     auto* prs = new Parser(argv[1]);
     std::vector<std::string> myList;
-
-
 
     while(loop){
 

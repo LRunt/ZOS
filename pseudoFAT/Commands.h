@@ -1,6 +1,9 @@
-//
-// Created by Lukas Runt on 12.11.2022.
-//
+/**
+ * Class execute the commands of the file system
+ * Created by Lukas Runt on 12.11.2022.
+ */
+
+
 
 #ifndef PSEUDOFAT_COMMANDS_H
 #define PSEUDOFAT_COMMANDS_H
