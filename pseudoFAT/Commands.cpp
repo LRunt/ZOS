@@ -3,8 +3,6 @@
  * Created by Lenovo on 12.11.2022.
  */
 
-
-
 #include "Commands.h"
 
 const int LAST_BLOCK = -1;
@@ -170,7 +168,9 @@ bool Commands::format(std::vector<std::string> myVectorOfCommands) {
  */
 int Commands::cp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 3){
         return 1;
@@ -257,7 +257,9 @@ int Commands::cp(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::mv(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 3){
         return 1;
@@ -309,7 +311,9 @@ int Commands::mv(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::rm(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -347,7 +351,9 @@ int Commands::rm(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -383,7 +389,9 @@ int Commands::mkdir(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -418,7 +426,9 @@ int Commands::rmdir(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::ls(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() == 1){ //ls
         printAllFiles(mActualCluster);
@@ -447,7 +457,9 @@ int Commands::ls(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::cat(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -498,7 +510,9 @@ int Commands::cat(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::cd(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -529,7 +543,9 @@ int Commands::cd(std::vector<std::string> vectorOfCommands) {
 std::string Commands::pwd(const std::vector<std::string>& vectorOfCommands) {
     std::string path;
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return "";
+        }
     }
     if(vectorOfCommands.size() != 1){
         return "COMMAND NOT FOUND";
@@ -560,7 +576,9 @@ int Commands::info(std::vector<std::string> vectorOfCommands) {
     std::string output;
 
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -590,7 +608,9 @@ int Commands::info(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::incp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 3){
         return 1;
@@ -657,7 +677,9 @@ int Commands::incp(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::outcp(std::vector<std::string> vectorOfCommands) {
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 3){
         return 1;
@@ -710,7 +732,9 @@ int Commands::outcp(std::vector<std::string> vectorOfCommands) {
  */
 int Commands::check(std::vector<std::string> vectorOfCommands){
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 1){
         return 2;
@@ -760,7 +784,9 @@ int Commands::check(std::vector<std::string> vectorOfCommands){
  */
 int Commands::bug(std::vector<std::string> vectorOfCommands){
     if(mActualCluster == -1){
-        saveFileSystemParameters();
+        if(!saveFileSystemParameters()){
+            return -1;
+        }
     }
     if(vectorOfCommands.size() != 2){
         return 1;
@@ -789,8 +815,12 @@ int Commands::bug(std::vector<std::string> vectorOfCommands){
 /**
  * Method initialize data of the file system
  */
-void Commands::saveFileSystemParameters() {
+bool Commands::saveFileSystemParameters() {
     std::ifstream fileSystem(mFileSystemName, std::ios::in | std::ios::binary);
+    if(!fileSystem){
+        std::cout << "File system " << mFileSystemName << " not exist. Please format file system with command 'FORMAT <number>MB'." << std::endl ;
+        return false;
+    }
     char data[1];
     std::string output;
 
@@ -827,6 +857,7 @@ void Commands::saveFileSystemParameters() {
 
     mLengthOfFile = NAME_OF_FILE_LENGTH + 1 + std::to_string(mFileSize).size() + mTableCellSize; //Name of file - file type - file size - cluster
     fileSystem.close();
+    return true;
 }
 
 /**

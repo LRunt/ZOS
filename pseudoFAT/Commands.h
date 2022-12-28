@@ -50,8 +50,6 @@ class Commands {
 
         int outcp(std::vector<std::string> vectorOfCommands);
 
-        void saveFileSystemParameters();
-
         int check(std::vector<std::string> vectorOfCommands);
 
         int bug(std::vector<std::string> vectorOfCommands);
@@ -66,6 +64,8 @@ class Commands {
         int mLengthOfFile;
         //defines where i am
         int mActualCluster = -1;
+
+        bool saveFileSystemParameters();
 
         int getNumberFromFat(int cluster);
 
@@ -105,7 +105,7 @@ class Commands {
 
         void deleteFileFromDirectory(int cluster, const std::string& fileName);
 
-    bool rewriteFileCluster(int cluster, const std::string& fileName, int newFileCluster);
+        bool rewriteFileCluster(int cluster, const std::string& fileName, int newFileCluster);
 };
 
 

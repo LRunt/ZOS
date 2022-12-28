@@ -76,7 +76,8 @@ int Parser::loadCommand(const std::string &command) {
             return 0;
         case 1: //cp
             commandReturnValue = mCmd->cp(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -94,7 +95,8 @@ int Parser::loadCommand(const std::string &command) {
             return 1;
         case 2: //mv
             commandReturnValue = mCmd->mv(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -120,7 +122,8 @@ int Parser::loadCommand(const std::string &command) {
             return 3;
         case 4: //mkdir
             commandReturnValue = mCmd->mkdir(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -134,7 +137,8 @@ int Parser::loadCommand(const std::string &command) {
             return 4;
         case 5: //rmdir
             commandReturnValue = mCmd->rmdir(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -148,13 +152,15 @@ int Parser::loadCommand(const std::string &command) {
             return 5;
         case 6: //ls
             commandReturnValue = mCmd->ls(myVector);
-            if(commandReturnValue){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }
             return 6;
         case 7: //cat
             commandReturnValue = mCmd->cat(myVector);
-            if(commandReturnValue == 1){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if (commandReturnValue == 2){
                 std::cerr << "PATH NOT FOUND" << std::endl;
@@ -164,7 +170,8 @@ int Parser::loadCommand(const std::string &command) {
             return 7;
         case 8: //cd
             commandReturnValue = mCmd->cd(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -177,7 +184,8 @@ int Parser::loadCommand(const std::string &command) {
             return 9;
         case 10: //info
             commandReturnValue = mCmd->info(myVector);
-            if(commandReturnValue == 1){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
             }else if(commandReturnValue == 2){
                 std::cerr << "FILE NOT FOUND" << std::endl;
@@ -185,7 +193,8 @@ int Parser::loadCommand(const std::string &command) {
             return 10;
         case 11: //incp
             commandReturnValue = mCmd->incp(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -203,7 +212,8 @@ int Parser::loadCommand(const std::string &command) {
             return 11;
         case 12: //outcp
             commandReturnValue = mCmd->outcp(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -215,7 +225,8 @@ int Parser::loadCommand(const std::string &command) {
             return 12;
         case 13: //load
             commandReturnValue = load(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
@@ -232,7 +243,8 @@ int Parser::loadCommand(const std::string &command) {
             return 14;
         case 15: //check
             commandReturnValue = mCmd->check(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cout << "ERROR" << std::endl;
@@ -242,7 +254,8 @@ int Parser::loadCommand(const std::string &command) {
             return 15;
         case 16: //bug
             commandReturnValue = mCmd->bug(myVector);
-            if(commandReturnValue == 0){
+            if(commandReturnValue == -1){
+            }else if(commandReturnValue == 0){
                 std::cout << "OK" << std::endl;
             }else if(commandReturnValue == 1){
                 std::cerr << command << ": COMMAND NOT FOUND" << std::endl;
