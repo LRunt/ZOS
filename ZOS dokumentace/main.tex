@@ -1,0 +1,174 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage [utf8]{inputenc}
+\usepackage [IL2]{fontenc}
+\usepackage [czech]{babel}
+\usepackage{graphicx}
+\usepackage[numbib]{tocbibind}
+\usepackage{hyperref}
+\usepackage{wrapfig}
+\usepackage{pdfpages}
+\usepackage{url}
+
+\title{\includegraphics[width=10cm]{FAV_cmyk}
+
+{\huge Semestrální práce z KIV/ZOS}
+
+\vspace{0.5cm}
+{\LARGE PseudoFAT systém}
+\vspace{1cm} 
+
+\Large Lukáš Runt (A20B0226P)
+\vspace{0.5cm} 
+
+\large \itshape lrunt@students.zcu.cz
+}
+\date{\vspace{6cm} \today}
+
+
+\begin{document}
+
+\begin{titlepage}
+\clearpage\maketitle
+\thispagestyle{empty}
+\end{titlepage}
+\tableofcontents \newpage
+
+\section{Zadání}
+    Tématem semestrální práce je práce se zjednodušeným souborovým systémem založeným na pseudoFAT s podporou následujících příkazů:
+
+    \begin{itemize}
+        \item \textbf{cp \textless s1\textgreater \textless s2\textgreater } - Zkopíruje soubor s1 do umístění s2 
+        \item \textbf{mv \textless s1\textgreater \textless s2\textgreater } - Přesune soubor s1 do umístění s2, nebo přejmenuje s1 na s2
+        \item \textbf{rm \textless s1\textgreater } - Smaže soubor s1
+        \item \textbf{mkdir \textless a1\textgreater } - Vytvoří adresář a1
+        \item \textbf{rmdir \textless a1\textgreater } - Smaže prázdný adresář a1
+        \item \textbf{ls \textless a1\textgreater nebo ls} - Vypíše obsah adresáře a1, bez parametru vypíše obsah aktuálního adresáře
+        \item \textbf{cat \textless s1\textgreater } - Vypíše obsah souboru s1
+        \item \textbf{cd \textless a1\textgreater } - Změní aktuální cestu do adresáře a1
+        \item \textbf{pwd} - Vypíše aktuální cestu
+        \item \textbf{info \textless a1/s1\textgreater } - Vypíše informace o souboru/adresáři s1/a1 (v jakých clusterech se nachází)
+        \item \textbf{incp \textless s1\textgreater \textless s2\textgreater } - Nahraje soubor s1 z pevného disku do umístění s2 ve vašem FS
+        \item \textbf{outcp \textless s1\textgreater \textless s2\textgreater } - Nahraje soubor s1 z vašeho FS do umístění s2 na pevném disku
+        \item \textbf{load \textless s1\textgreater } - Načte soubor z pevného disku, ve kterém budou jednotlivé příkazy, a začne je sekvenčně
+        vykonávat. Formát je 1 příkaz/1řádek
+        \item \textbf{format \textless velikost\textgreater } - Příkaz provede formát souboru, který byl zadán jako parametr při spuštění programu na
+        souborový systém dané velikosti. Pokud už soubor nějaká data obsahoval, budou přemazána.
+        Pokud soubor neexistoval, bude vytvořen.
+        \item \textbf{check} - Zkontroluje, zda je souborový systém nepoškozen
+        \item \textbf{bug \textless s1\textgreater } - Poškodí souborový systém, dle vašeho uvážení, tak aby bylo možné
+        ověřit funkcionalitu příkazu check
+    \end{itemize}
+
+    Více v přiloženém zadání.
+    
+
+\section{Teorie}
+
+    FAT (File Allocation Table) tabulky jsou struktury, které se používají v počítačových systémech k ukládání informací o tom, kde se nacházejí soubory na disku nebo jiném datovém úložišti. FAT tabulky jsou součástí souborového systému, který se používá k ukládání a správě souborů na pevném disku nebo jiném datovém úložišti.
+
+    \vspace{0.3cm}
+    \noindent Existují tři hlavní typy FAT tabulek: FAT12, FAT16 a FAT32. Každý z těchto typů má své vlastní specifikace pro ukládání informací o souborech a může být použit v různých typech počítačů nebo operačních systémů.
+
+    \vspace{0.3cm}
+    \noindent FAT12 je nejstarší typ FAT tabulky a byl původně vytvořen pro použití s disketami. Jeho kapacita je omezená a není schopný efektivně spravovat velké množství souborů.
+
+    \vspace{0.3cm}
+    \noindent FAT16 byl vytvořen pro použití s pevnými disky a má větší kapacitu než FAT12. Je schopný spravovat větší množství souborů a ještě stále se používá v některých starších počítačích.
+
+    \vspace{0.3cm}
+    \noindent FAT32 je nejnovější a nejvyvinutější typ FAT tabulky. Má největší kapacitu ze všech tří typů a je schopný spravovat velké množství souborů efektivně. Je široce používán v moderních počítačích a operačních systémech.
+
+\section{Implementace}
+
+    Program je napsán v programovacím jazyce C++. Program se spouští příkazem:
+
+    \vspace{0.5cm}
+    \centerline{ \texttt{pseudoFAT.exe \textless jméno file systému\textgreater }} 
+    \vspace{0.5cm}
+
+    \subsection{Struktura file systému}
+        
+        FAT tabulka se skládá z clusterů. Velikost clusteru je pevně daná a to 1024B. Dále se tabulka dělí do následujících 3 částí:
+
+        \begin{itemize}
+            \item Bootovací část
+            \item FAT tabulka
+            \item Datová část
+        \end{itemize}
+
+        \subsubsection{Boot}
+            Bootovací část zabírá první cluster a obsahuje následující hodnoty oddělené oddělovacím znakem \texttt{0x00}:
+
+            \begin{itemize}
+                \item Velikost file systému
+                \item velikost clusteru
+                \item počáteční cluster datové části (cluster, ve kterém se nachází root)
+            \end{itemize}    
+
+        \subsubsection{FAT}
+            FAT tabulka obsahuje hodnoty o jednotlivých clusterech. Jednotlivé clustery mohou nabývat následující hodnoty:
+
+            \begin{itemize}
+                \item Volný cluster = -2
+                \item Poslední cluster = -1
+                \item Pokračování souboru = Kladné číslo
+            \end{itemize}
+
+            V reálném FAT systému se používají 2 FAT tabulky, kde druhá slouží jako záloha a kontrola jestli jsou hodnoty v první tabulce správné. Já ve svém programu používám pouze jednu FAT tabulku. Jednotlivé buňky tabulky jsou veliké podle počtu clusterů, aby se nemusela přepisovat celá tabulka, při změně na cluster, který má číslo s více místy.
+            
+        \subsubsection{Data}
+            Clustery můžou být dvou druhů. První druh je typ souboru, který obsahuje pouze bity souboru. Druhý typ je adresář, který má pevně danou následující strukturu:
+
+            \begin{itemize}
+                \item Jméno souboru (11 znaků)
+                \item Typ souboru soubor/adresář (1 znak)
+                \item Velikost souboru (počet znaků velikosti file systému)
+                \item Cluster, kde se soubor nachází (počet znaků podle počtu clusterů)
+            \end{itemize}
+
+            \noindent Všechny údaje mají pevně danou velikost, aby nedocházelo k přepisování celé adresářové struktury. Adresář může zabírat pouze jeden cluster, pokud se další soubor nebo adresář nevejde do clusteru, vypíše se chybová hláška o plnosti adresáře. Každý adresář začíná údaji o konkrétním adresáři, kde cluster ukazuje na rodičovský adresář (v případě rootu -1). 
+
+    \subsection{Třídy v programu}
+
+        \subsubsection{Main}
+            Třída se stará o vstup od uživatele. \texttt{Main} se ve smyčcě ptá uživatele na příkazy, dokud uživatel nezadá příkaz \texttt{quit}.
+
+        \subsubsection{Parser}
+            Třída \texttt{Parser} se stará o parsování příkazů. Nejdříve se příkaz rozdělí podle bílých znaků a následně se zjišťuje, který jestli daný příkaz existuje, popřípadě jaký příkaz se má spustit. O jednotlivé příkazy se pak stará třída \texttt{Commands}. Příkaz \texttt{load} je jediná výjimka, která se provádí ve třídě \texttt{Parser}, kvůli tomu, že se načítané řádky rovnou parsují.
+
+        \subsubsection{Commands}
+            Třída \texttt{Commands} se stará o vykonávání jednotlivých příkazů. Třída obsahuje funkce všech příkazů kromě příkazu load. Každý příkaz se pak vykonává pomocí jednotlivých pomocných funkcí, které zařizují unární operace jako změň hodnotu ve FAT tabulce, zjisti velikost souboru, změň cluster souboru a další.
+
+\section{Spuštění aplikace}
+
+    Soubor s aplikací obsahuje následující soubory:
+
+    \begin{itemize}
+        \item \texttt{main.cpp}
+        \item \texttt{Parser.cpp} a \texttt{Parser.h}
+        \item \texttt{Commands.cpp} a \texttt{Commands.h}
+        \item \texttt{CMakeLists.txt}
+        \item \texttt{PseudoFAT.exe}
+    \end{itemize}
+
+    Soubor se pak spouští příkazem:
+
+    \vspace{0.5cm}
+    \centerline{ \texttt{PseudoFAT.exe \textless jméno file systému\textgreater }} 
+    \vspace{0.5cm}
+
+    Pro překlad byly použit následující příkazy:
+
+    \vspace{0.5cm}
+    \centerline{Na Windows: \texttt{g++ main.cpp Parser.cpp Commands.cpp -o PseudoFAT.exe}} 
+    \vspace{0.5cm}
+    \centerline{Na Linux: \texttt{gcc main.cpp Parser.cpp Commands.cpp -o PseudoFAT.exe}} 
+    \vspace{0.5cm}
+
+    \noindent Při překladu je potřeba kompilátoru s verzí C++ alespoň 17, neboť je v programu použita knihovna \texttt{filesystem}, která není obsažena ve starších verzích.
+
+\section{Závěr}
+V rámci semestrální práce, jsem vytvořil program pseudoFAT systému. Tato práce mi pomohla se zdokonalit v programovacím jazyce C++ a také pochopit jak funguje ukládání dat ve File Allocation Table. Kód se dá určitě napsat mnohem lépe, jde o můj první pokus o větší práci v C++. V průběhu práce, jsem si začal uvědomovat pár nevhodně navržených koncepcí, které by šly určitě vymyslet a naimplementovat lépe. I když jsem se při dělání semestrální práce mnoho naučil, nesmím opomenout, že mi tato práce relativně zkazila Vánoce a mému psychickému stavu také vůbec nepomohla. Na závěr tedy doufám, že se můj život alespoň trošku zlepší po odevzdání této práce, aby jsem jí mohl hodnotit pozitivně.
+
+\end{document}
